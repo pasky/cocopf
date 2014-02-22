@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Run a given minimization method directly, outside of a portfolio.
+# Run a single given minimization method outside of a portfolio.
 # (N.B. SciPy minimizers are still wrapped in basinhopping.)  If
 # RESTARTS is specified (and bigger than 0), the function evaluation
 # limits are scheduled to allow for #RESTARTS independent restarts
@@ -10,9 +10,9 @@
 # At any rate, if the minimizer converges but does not reach optimum
 # and some time is still left, it is restarted.
 #
-# Usage: direct.py METHOD [RESTARTS] [MAXFEV]
+# Usage: single.py METHOD [RESTARTS] [MAXFEV]
 #
-# Example: direct.py L-BFGS-B 0 1000
+# Example: single.py L-BFGS-B 0 1000
 
 import sys # in case we want to control what to run via command line args
 import time
