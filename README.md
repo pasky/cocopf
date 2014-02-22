@@ -68,6 +68,10 @@ run outside a portfolio, generating some nice graphs while we are at it:
 	bbob/latextemplates$ pdflatex templateBBOBmany.tex
 	bbob/latextemplates$ evince templateBBOBmany.pdf
 
+(If you need to interrupt the experiment, use Ctrl-\ (SIGQUIT) instead
+of Ctrl-C.  You will need to wipe out the generated data directories
+before restarting the experiment!)
+
 
 Documentation
 -------------
