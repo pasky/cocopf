@@ -97,7 +97,9 @@ def minimize_f(fi, K = None, method = None):
 
 if __name__ == "__main__":
     method = sys.argv[1]
-    K = (30) if len(sys.argv) <= 2 else eval(sys.argv[2])
+    K = 30 if method.count(',') == 0 else method.count(',') + 1
+    if len(sys.argv) > 2:
+        K = eval(sys.argv[2])
     maxfev = '1050' if len(sys.argv) <= 3 else sys.argv[3]
 
     m_opts = dict(K = K, method = method)
