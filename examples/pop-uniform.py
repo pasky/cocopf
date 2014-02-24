@@ -54,9 +54,13 @@ class XMinimizeMethod(MinimizeMethod):
                     cb = minimizer_kwargs['callback']
                     innercb = InnerCMACallback(cb) if cb is not None else None
 
-                    return cma.fmin(fun, x0, 10./4., bounds = [-5., 5.],
-                            ftarget = self.ftarget, maxfevals = self.maxfevals,
-                            termination_callback = innercb, verb_disp = 0)
+                    try:
+                        return cma.fmin(fun, x0, 10./4., bounds = [-5., 5.],
+                                ftarget = self.ftarget, maxfevals = self.maxfevals,
+                                termination_callback = innercb, verb_disp = 0)
+                    except cma._Error, e:
+                        print "CMA error: " + str(e)
+                        return None
 
             self.outer_loop = CMAWrapper(self.fi.f.ftarget,
                     self.fi.maxfunevals - self.fi.f.evaluations)
