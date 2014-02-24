@@ -79,3 +79,39 @@ Documentation
 There is some inline documentation, but it's still a work in progress.
 However, the code is short and commented.  You can use the examples
 as templates for your own experiments.  Contributions are welcome!
+
+
+Other Approaches
+----------------
+
+BBOB itself comes with a ``bbob_pproc.algportfolio`` module that allows
+one to simulate parallel run of multiple tested algorithms.  Back-testing
+against past obtained results is also popular when researching algorithm
+portfolios with offline selection and it certainly is useful in that
+scenario.
+
+HyperBBOB's approach is different in three important aspects:
+
+  * During online selection, algorithms are switched between their
+    full iterations in HyperBBOB.  However, algorithm iterations are
+    not recorded in the BBOB dat files and back-testing using the
+    algportfolio approach therefore allows for algorithm switching
+    only between individual function evaluations (either after each
+    evaluation, or after every N iterations).
+
+    We argue that HyperBBOB's approach is more realistic in the online
+    selection setting as switching algorithms may not be appropriate
+    after an arbitrary function evaluation - algorithms may evaluate
+    the function a variable number of times, we may try to switch
+    from a genetic algorithm instance multiple times during a single
+    population evaluation, and by checking too often, we can incur
+    a significant computation overhead from the algorithm selection
+    itself.
+
+  * It makes it easier to implement own online algorithm selection
+    strategies than modifying the code of algportfolio, which can be
+    a little opaque.
+
+  * It allows not just for benchmarking, but also for reusing
+    the same code for practical black-box optimization of functions
+    that are not part of BBOB.
