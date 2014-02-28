@@ -1,15 +1,15 @@
-HyperBBOB: An Algorithm Portfolio BBOB Platform
-===============================================
+COCOpf: An Algorithm Portfolio COCO/BBOB Platform
+=================================================
 
-**HyperBBOB** is a Python-based platform for research and development of
+**COCOpf** is a Python-based platform for research and development of
 hyperheuristics maintaining portfolios of optimization algorithms within
-the excellent [BBOB benchmarking framework](http://coco.gforge.inria.fr/doku.php).
+the excellent [COCO benchmarking framework for BBOB workshops](http://coco.gforge.inria.fr/doku.php).
 
-Using **HyperBBOB**, you can immediately start experimenting with ways to
+Using **COCOpf**, you can immediately start experimenting with ways to
 combine multiple heuristic black-box optimization algorithms to achieve
-the best combined performance on the BBOB benchmark function set.
+the best combined performance on the COCO/BBOB benchmark function set.
 
-**HyperBBOB** brings the following on the table:
+**COCOpf** brings the following on the table:
 
   * A ready-made ``Experiment`` class that will shorten and simplify your
     experiment scripts.
@@ -24,7 +24,7 @@ the best combined performance on the BBOB benchmark function set.
     plus there is an example incorporating *CMA-ES*, allowing you to
     focus just on your hyperheuristics.
 
-  * As a unique feature, **HyperBBOB** allows you to single-step
+  * As a unique feature, **COCOpf** allows you to single-step
     the minimization algorithms iteration by iteration (via the
     ``MinimizeStepping`` wrapper), allowing usage of a flexible suspend
     / resume schedule.  This requires no modification of the used
@@ -35,32 +35,32 @@ the best combined performance on the BBOB benchmark function set.
   * A ready-made ``Population`` class for easy maintenance of a portfolio
     of multiple concurrently executed (algorithm, solution) pairs.
 
-HyperBBOB has been tested just on Debian Linux so far.
+COCOpf has been tested just on Debian Linux so far.
 
 
 Getting Started
 ---------------
 
-First, get and unpack the latest bbob distribution, e.g.:
+First, get and unpack the latest bbob COCO distribution, e.g.:
 
 	http://coco.lri.fr/downloads/download13.09/bbobexp13.09.tar.gz
 
 Change to the ``python/`` subdirectory and ``git clone
-https://github.com/pasky/hyperbbob`` here - that should
-create a ``python/hyperbbob/`` directory.
+https://github.com/pasky/cocopf`` here - that should
+create a ``python/cocopf/`` directory.
 
 Well, that's it!  It is time to run some examples - find them all
 in the ``examples/`` subdirectory and run them all from within the
 ``python/`` directory.  Description and instructions are at the
 top of each example.  Let's try the epsilon-greedy strategy:
 
-	bbob/python$ hyperbbob/examples/pop-egreedy.py Powell,BFGS,SLSQP 3
+	bbob/python$ cocopf/examples/pop-egreedy.py Powell,BFGS,SLSQP 3
 
 You can use GNU Parallel to easily execute multiple experiments in
 parallel.  Let's compare the raw performance of the three algorithms
 run outside a portfolio, generating some nice graphs while we are at it:
 
-	bbob/python$ parallel -u --gnu hyperbbob/examples/single.py {} ::: Powell BFGS SLSQP
+	bbob/python$ parallel -u --gnu cocopf/examples/single.py {} ::: Powell BFGS SLSQP
 	bbob/python$ cd data-10e3
 	bbob/python/data-10e3$ ../bbob_pproc/rungenericmany.py Powell BFGS SLSQP
 	bbob/python/data-10e3$ cd ../../latextemplates
@@ -84,22 +84,22 @@ as templates for your own experiments.  Contributions are welcome!
 Other Approaches
 ----------------
 
-BBOB itself comes with a ``bbob_pproc.algportfolio`` module that allows
+COCOpf itself comes with a ``bbob_pproc.algportfolio`` module that allows
 one to simulate parallel run of multiple tested algorithms.  Back-testing
 against past obtained results is also popular when researching algorithm
 portfolios with offline selection and it certainly is useful in that
 scenario.
 
-HyperBBOB's approach is different in three important aspects:
+COCOpf's approach is different in three important aspects:
 
   * During online selection, algorithms are switched between their
-    full iterations in HyperBBOB.  However, algorithm iterations are
-    not recorded in the BBOB dat files and back-testing using the
+    full iterations in COCOpf.  However, algorithm iterations are
+    not recorded in the COCO/BBOB dat files and back-testing using the
     algportfolio approach therefore allows for algorithm switching
     only between individual function evaluations (either after each
     evaluation, or after every N iterations).
 
-    We argue that HyperBBOB's approach is more realistic in the online
+    We argue that COCOpf's approach is more realistic in the online
     selection setting as switching algorithms may not be appropriate
     after an arbitrary function evaluation - algorithms may evaluate
     the function a variable number of times, we may try to switch
@@ -114,4 +114,4 @@ HyperBBOB's approach is different in three important aspects:
 
   * It allows not just for benchmarking, but also for reusing
     the same code for practical black-box optimization of functions
-    that are not part of BBOB.
+    that are not part of COCO/BBOB.

@@ -6,7 +6,7 @@ Common routines that manage experimental setup of a single experiment,
 greatly simplifying and reducing code duplication in per-experiment
 executables.
 
-This is not even specific to HyperBBOB. It is inspired by the BBOB
+This is not even specific to COCOpf. It is inspired by the BBOB
 example experiment.
 """
 

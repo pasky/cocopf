@@ -14,7 +14,7 @@ import warnings
 import numpy as np
 import numpy.random as nr
 
-from hyperbbob.minstep import MinimizeStepping
+from cocopf.minstep import MinimizeStepping
 
 
 class Population:

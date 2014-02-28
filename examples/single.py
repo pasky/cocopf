@@ -24,8 +24,8 @@ import scipy.optimize as so
 sys.path.append('.')
 import fgeneric
 import bbobbenchmarks
-from hyperbbob.experiment import Experiment
-from hyperbbob.methods import MinimizeMethod
+from cocopf.experiment import Experiment
+from cocopf.methods import MinimizeMethod
 
 
 class MMCancel(Exception):
