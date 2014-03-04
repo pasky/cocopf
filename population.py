@@ -44,6 +44,24 @@ class Population:
         return MinimizeStepping(self.fi.f.evalfun, self.points[i],
                 self.methods[i % len(self.methods)])
 
+    def _evalfun(self, inputx):
+        """
+        This is like self.fi.f.evalfun(), i.e. evaluating the benchmark
+        function, but without incrementing usage counters.  This may be
+        used only for re-evaluating a function at a point we already
+        obtained but simply cannot conveniently retrieve right now;
+        i.e. a value returned from the method black-box.
+        """
+        if self.fi.f._is_rowformat:
+            x = np.asarray(inputx)
+        else:
+            x = np.transpose(inputx)
+        out = self.fi.f._fun_evalfull(x)
+        try:
+            return out[0]
+        except TypeError:
+            return out
+
     def step_one(self, i):
         """
         Perform a single minimization step with member i.
@@ -64,8 +82,7 @@ class Population:
                 continue
 
         # Get the value at this point
-        # XXX: We needlessly raise f.evaluations here :(
-        y = self.fi.f.evalfun(x)
+        y = self._evalfun(x)
         self.values[i] = y
         self.iters[i] += 1
         self.total_steps += 1
