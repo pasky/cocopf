@@ -36,6 +36,7 @@ class Population:
         # A population of iteration counters
         self.iters = np.zeros(self.K, dtype = np.int)
 
+        self.total_steps = 0
         self.total_iters = 0
 
     def _minimizer_make(self, i):
@@ -67,7 +68,7 @@ class Population:
         y = self.fi.f.evalfun(x)
         self.values[i] = y
         self.iters[i] += 1
-        self.total_iters += 1
+        self.total_steps += 1
         return (x, y)
 
     def restart_one(self, i):
@@ -98,6 +99,14 @@ class Population:
         #time.sleep(1)
         return i
 
+
+    def end_iter(self):
+        """
+        Notify the population that a single portfolio iteration has passed.
+        This is useful in case we step multiple method instances within
+        a single iteration (e.g. in MetaMax).
+        """
+        self.total_iters += 1
 
     def stop(self):
         for m in self.minimizers:

@@ -51,6 +51,7 @@ def minimize_f(fi, K = None, method = None, eps = None):
             optmethod = pop.minimizers[i].minmethod.name
             stop = True
             break # stop immediately, no point in going on
+        pop.end_iter()
 
     # Main set of iterations - explore/exploit.
     while not stop and f.evaluations < fi.maxfunevals:
@@ -67,6 +68,7 @@ def minimize_f(fi, K = None, method = None, eps = None):
             optmethod = pop.minimizers[i].minmethod.name
             stop = True
             break # stop immediately, no point in going on
+        pop.end_iter()
 
     pop.stop()
 

@@ -93,6 +93,7 @@ def minimize_f(fi, K = None, method = None):
 
         if f.evaluations > fi.maxfunevals:
             stop = True
+        pop.end_iter()
 
     pop.stop()
 
