@@ -38,7 +38,7 @@ class SteppingData:
         e = f.lasteval
         res = ('%d %d %d %s %d %+10.9e %+10.9e'
                % (e.num, self.pop.total_iters,
-                  i, self.pop.methods[i].name, self.pop.iters[i],
+                  i, self.pop.minimizers[i].minmethod.name, self.pop.iters[i],
                   self.pop.values[i] - f.fopt, e.bestf - f.fopt))
 
         tmp = []
