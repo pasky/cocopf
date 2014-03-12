@@ -19,6 +19,12 @@ To use the credits infrastructure, simply maintain a PopulationCredit
 instance together with Population and choose based on
 popcredit.credit[i] instead of pop.values[i]. Consider allowing
 the user to override the method names.
+
+XXX: Warning, note that the credits infrastructure is still experimental
+and particularly the assign/accrual method API can change yet.
+We need to allow history-based credit, be it simply improvement metric
+or a larger history window support. We could do that by adding a reward
+history to Population as well, though.
 """
 
 import numpy as np

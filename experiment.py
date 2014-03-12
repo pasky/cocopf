@@ -47,6 +47,14 @@ class Experiment:
         templateBBOBmany ECRF grahs; this is useful for comparison
         during non-final experiments, especially with 10^4 or more
         function evaluations.
+
+        If the environment variable $BBOB_FUNSTRIPES is set to "m%n" where
+        m<n, m,n are integers, only some functions are evaluated, that is
+        each n-th function, offset by m. This is useful for speedup by
+        parallelized benchmarking, e.g.:
+            parallel -u --gnu env BBOB_FUNSTRIPES={1}%6 ./pop-egreedy.py ::: 0 1 2 3 4 5
+        (Parallelizing by instances would be more useful, but impossible
+        due to data file conflicts.)
         """
         self.maxfev = maxfev
         strmaxfev = '10e%d' % int(math.log10(maxfev))
@@ -58,6 +66,11 @@ class Experiment:
             self.dimensions = (2, 5, 20) # Just bootstrap + BBOBmany ECRF
         self.function_ids = bbobbenchmarks.nfreeIDs
         self.instances = range(1, 6) + range(31, 41)
+
+        funstripes = os.environ.get('BBOB_FUNSTRIPES')
+        if funstripes is not None:
+            (ofs, tot) = [int(i) for i in funstripes.split('%')]
+            self.function_ids = [i for i in self.function_ids if (i-ofs)%tot == 0]
 
         self.t0 = time.time()
         np.random.seed(int(self.t0))
