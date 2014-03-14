@@ -62,8 +62,10 @@ class Experiment:
 
         if bool(os.environ.get('BBOB_FULLDIM')):
             self.dimensions = (2, 3, 5, 10, 20, 40) # Full settings
+	    fulldim = 'f'
         else:
             self.dimensions = (2, 5, 20) # Just bootstrap + BBOBmany ECRF
+	    fulldim = ''
         self.function_ids = bbobbenchmarks.nfreeIDs
         self.instances = range(1, 6) + range(31, 41)
 
@@ -76,7 +78,7 @@ class Experiment:
         np.random.seed(int(self.t0))
 
         comments += ', FEV=%s*dim' % maxfev
-        self.f = fgeneric.LoggingFunction(datapath = 'data-%s/%s'%(strmaxfev,shortname),
+        self.f = fgeneric.LoggingFunction(datapath = 'data-%s%s/%s'%(strmaxfev,fulldim,shortname),
                 algid = shortname, comments = comments)
 
     def finstances(self):
