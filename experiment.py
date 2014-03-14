@@ -35,6 +35,24 @@ class FInstance:
         self.iinstance = iinstance
         self.maxfunevals = maxfunevals
 
+    def evalfun(self, inputx):
+        """
+        This is like self.f.evalfun(), i.e. evaluating the benchmark
+        function, but without incrementing usage counters.  This may be
+        used only for re-evaluating a function at a point we already
+        obtained but simply cannot conveniently retrieve right now;
+        i.e. a value returned from the method black-box.
+        """
+        if self.f._is_rowformat:
+            x = np.asarray(inputx)
+        else:
+            x = np.transpose(inputx)
+        out = self.f._fun_evalfull(x)
+        try:
+            return out[0]
+        except TypeError:
+            return out
+
 
 class Experiment:
     def __init__(self, maxfev, shortname, comments):
