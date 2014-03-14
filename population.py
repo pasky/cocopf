@@ -22,27 +22,29 @@ from cocopf.minstep import MinimizeStepping
 
 
 class SteppingData:
-    def __init__(self, pop):
-        self.pop = pop
+    def __init__(self, f, dim):
+        self.f = f
+        self.total_iters = 0
 
         # XXX: This is evil; copied from beginning of fgeneric.evalfun()
-        if not pop.fi.f._is_setdim or pop.fi.f._dim != pop.fi.dim:
-            pop.fi.f._setdim(pop.fi.dim)
-        if not pop.fi.f._is_ready():
-            pop.fi.f._readytostart()
+        if not self.f._is_setdim or self.f._dim != dim:
+            self.f._setdim(dim)
+        if not self.f._is_ready():
+            self.f._readytostart()
 
-        self.datafile = open(os.path.splitext(pop.fi.f.datafile)[0] + '.mdat', 'a')
+        self.datafile = open(os.path.splitext(self.f.datafile)[0] + '.mdat', 'a')
         self.datafile.write("% function evaluation | portfolio iteration | instance index | instance method | instance invocations | instance best noise-free fitness - Fopt | best noise-free fitness - Fopt | x1 | x2...\n")
-    def record(self, i):
-        f = self.pop.fi.f
-        e = f.lasteval
+
+    def end_iter(self):
+        self.total_iters += 1
+
+    def record(self, i, name, iters, fitness, point):
+        e = self.f.lasteval
         res = ('%d %d %d %s %d %+10.9e %+10.9e'
-               % (e.num, self.pop.total_iters,
-                  i, self.pop.minimizers[i].minmethod.name, self.pop.iters[i],
-                  self.pop.values[i] - f.fopt, e.bestf - f.fopt))
+               % (e.num, self.total_iters, i, name, iters, fitness, e.bestf - self.f.fopt))
 
         tmp = []
-        for x in self.pop.points[i]:
+        for x in point:
             tmp.append(' %+5.4e' % x)
         res += ''.join(tmp)
 
@@ -71,7 +73,7 @@ class Population:
 
         self.total_steps = 0
         self.total_iters = 0
-        self.data = SteppingData(self);
+        self.data = SteppingData(self.fi.f, self.fi.dim);
 
     def _minimizer_make(self, i):
         warnings.simplefilter("ignore") # ignore warnings about unused/ignored options
@@ -120,7 +122,7 @@ class Population:
         self.values[i] = y
         self.iters[i] += 1
         self.total_steps += 1
-        self.data.record(i)
+        self.data.record(i, self.minimizers[i].minmethod.name, self.iters[i], self.values[i] - self.fi.f.fopt, self.points[i])
         return (x, y)
 
     def restart_one(self, i):
@@ -159,6 +161,7 @@ class Population:
         a single iteration (e.g. in MetaMax).
         """
         self.total_iters += 1
+        self.data.end_iter()
 
     def stop(self):
         for m in self.minimizers:
