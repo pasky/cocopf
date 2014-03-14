@@ -15,6 +15,7 @@ black-box but require at least function derivations.  COBYLA is not
 supported as it (yet?) does not implement a callback functionality.
 """
 
+import os
 import string
 import sys
 import time
@@ -115,3 +116,38 @@ class MinimizeMethod(object):
         """
         return self.outer_loop(fun, x0, callback = outer_cb,
                 minimizer_kwargs = dict(callback = inner_cb, **self.minimizer_kwargs))
+
+
+class SteppingData:
+    """
+    This class logs data on current progress of method stepping
+    (typically after each method iteration) to an .mdat file.
+    """
+    def __init__(self, fi):
+        self.f = fi.f
+        self.total_iters = 0
+
+        # XXX: This is evil; copied from beginning of fgeneric.evalfun()
+        if not self.f._is_setdim or self.f._dim != fi.dim:
+            self.f._setdim(fi.dim)
+        if not self.f._is_ready():
+            self.f._readytostart()
+
+        self.datafile = open(os.path.splitext(self.f.datafile)[0] + '.mdat', 'a')
+        self.datafile.write("% function evaluation | portfolio iteration | instance index | instance method | instance invocations | instance best noise-free fitness - Fopt | best noise-free fitness - Fopt | x1 | x2...\n")
+
+    def end_iter(self):
+        self.total_iters += 1
+
+    def record(self, i, name, iters, fitness, point):
+        e = self.f.lasteval
+        res = ('%d %d %d %s %d %+10.9e %+10.9e'
+               % (e.num, self.total_iters, i, name, iters, fitness, e.bestf - self.f.fopt))
+
+        tmp = []
+        for x in point:
+            tmp.append(' %+5.4e' % x)
+        res += ''.join(tmp)
+
+        self.datafile.write(res + '\n')
+        self.datafile.flush()

@@ -9,7 +9,6 @@ Solution search progress (in respect to method population) is
 recorded to an .mdat file.
 """
 
-import os;
 import string
 import sys
 import time
@@ -19,37 +18,7 @@ import numpy as np
 import numpy.random as nr
 
 from cocopf.minstep import MinimizeStepping
-
-
-class SteppingData:
-    def __init__(self, f, dim):
-        self.f = f
-        self.total_iters = 0
-
-        # XXX: This is evil; copied from beginning of fgeneric.evalfun()
-        if not self.f._is_setdim or self.f._dim != dim:
-            self.f._setdim(dim)
-        if not self.f._is_ready():
-            self.f._readytostart()
-
-        self.datafile = open(os.path.splitext(self.f.datafile)[0] + '.mdat', 'a')
-        self.datafile.write("% function evaluation | portfolio iteration | instance index | instance method | instance invocations | instance best noise-free fitness - Fopt | best noise-free fitness - Fopt | x1 | x2...\n")
-
-    def end_iter(self):
-        self.total_iters += 1
-
-    def record(self, i, name, iters, fitness, point):
-        e = self.f.lasteval
-        res = ('%d %d %d %s %d %+10.9e %+10.9e'
-               % (e.num, self.total_iters, i, name, iters, fitness, e.bestf - self.f.fopt))
-
-        tmp = []
-        for x in point:
-            tmp.append(' %+5.4e' % x)
-        res += ''.join(tmp)
-
-        self.datafile.write(res + '\n')
-        self.datafile.flush()
+from cocopf.methods import SteppingData
 
 
 class Population:
@@ -73,7 +42,7 @@ class Population:
 
         self.total_steps = 0
         self.total_iters = 0
-        self.data = SteppingData(self.fi.f, self.fi.dim);
+        self.data = SteppingData(self.fi)
 
     def _minimizer_make(self, i):
         warnings.simplefilter("ignore") # ignore warnings about unused/ignored options
