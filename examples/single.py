@@ -25,7 +25,7 @@ sys.path.append('.')
 import fgeneric
 import bbobbenchmarks
 from cocopf.experiment import Experiment
-from cocopf.methods import MinimizeMethod
+from cocopf.methods import MinimizeMethod, SteppingData
 
 
 class MMCancel(Exception):
@@ -38,8 +38,10 @@ def minimize_f(fi, method = None, wantrestarts = None):
     """
     f = fi.f
     n_restarts = -1
+    n_iters = 0
 
     mm = MinimizeMethod(method, fi)
+    mmdata = SteppingData(fi)
 
     # independent restarts until maxfunevals or ftarget is reached
     while not ((f.evaluations > 1 and f.fbest < f.ftarget)
@@ -52,27 +54,35 @@ def minimize_f(fi, method = None, wantrestarts = None):
         x0 = 10. * np.random.rand(fi.dim) - 5.
 
         class MMCallback:
-            def __init__(self, fi, f, maxfevals):
+            def __init__(self, fi, f, maxfevals, mm, data, n_iters):
                 self.restarts = 0
                 self.fi = fi
                 self.f = f
                 self.maxfevals = maxfevals
                 self.basefevals = self.f.evaluations
+                self.mm = mm
+                self.data = data
+                self.n_iters = n_iters
             def __call__(self, x):
-                y = self.f.evalfun(x)
+                self.n_iters += 1
+                y = self.fi.evalfun(x)
+                self.data.record(0, self.mm.name, self.n_iters, y - self.fi.f.fopt, x)
+
                 if y < self.f.ftarget:
                     raise MMCancel()
                 elif self.f.evaluations - self.basefevals > self.maxfevals:
                     raise MMCancel()
                 elif self.f.evaluations > self.fi.maxfunevals:
                     raise MMCancel()
-        cb = MMCallback(fi, f, maxfevals)
+        cb = MMCallback(fi, f, maxfevals, mm, mmdata, n_iters)
 
         try:
             warnings.simplefilter("ignore") # ignore warnings about unused/ignored options
             mm(f.evalfun, x0, inner_cb = cb)
         except MMCancel:
             pass # Ok.
+
+        n_iters = cb.n_iters
 
     return n_restarts
 
