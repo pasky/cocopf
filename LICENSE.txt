@@ -1,5 +1,10 @@
-Copyright 2014  Petr Baudis <pasky@ucw.cz>
+Copyright 2014  Petr Baudis, FEE CTU Prague [1]  <pasky@ucw.cz>
 All rights reserved.
+
+[1] Dept. of Cybernetics, Czech Technical University, Technická 2,
+	166 27 Praha, Czech Republic
+This project is supported by the CTU grant SGS14/194/OHK3/3T/13
+"Automatic adaptation of search algorithms".
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met: 
