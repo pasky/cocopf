@@ -126,6 +126,7 @@ class SteppingData:
     def __init__(self, fi):
         self.f = fi.f
         self.total_iters = 0
+        self.last_best = None
 
         # XXX: This is evil; copied from beginning of fgeneric.evalfun()
         if not self.f._is_setdim or self.f._dim != fi.dim:
@@ -141,8 +142,13 @@ class SteppingData:
 
     def record(self, i, name, iters, fitness, point):
         e = self.f.lasteval
-        res = ('%d %d %d %s %d %+10.9e %+10.9e'
-               % (e.num, self.total_iters, i, name, iters, fitness, e.bestf - self.f.fopt))
+        best = e.bestf - self.f.fopt
+        res = ('%d %d %d %s %d %+10.9e'
+               % (e.num, self.total_iters, i, name, iters, fitness))
+
+        if self.last_best is None or best != self.last_best:
+            res += (' %+10.9e' % best)
+            self.last_best = best
 
         # This information is not really useful and taking it out reduces
         # the uncompressed .mdat file size to 1/5.
