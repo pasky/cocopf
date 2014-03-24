@@ -134,7 +134,7 @@ class SteppingData:
             self.f._readytostart()
 
         self.datafile = open(os.path.splitext(self.f.datafile)[0] + '.mdat', 'a')
-        self.datafile.write("% function evaluation | portfolio iteration | instance index | instance method | instance invocations | instance best noise-free fitness - Fopt | best noise-free fitness - Fopt | x1 | x2...\n")
+        self.datafile.write("% function evaluation | portfolio iteration | instance index | instance method | instance invocations | instance best noise-free fitness - Fopt | best noise-free fitness - Fopt\n") # | x1 | x2...
 
     def end_iter(self):
         self.total_iters += 1
@@ -144,10 +144,12 @@ class SteppingData:
         res = ('%d %d %d %s %d %+10.9e %+10.9e'
                % (e.num, self.total_iters, i, name, iters, fitness, e.bestf - self.f.fopt))
 
-        tmp = []
-        for x in point:
-            tmp.append(' %+5.4e' % x)
-        res += ''.join(tmp)
+        # This information is not really useful and taking it out reduces
+        # the uncompressed .mdat file size to 1/5.
+        #tmp = []
+        #for x in point:
+        #    tmp.append(' %+5.4e' % x)
+        #res += ''.join(tmp)
 
         self.datafile.write(res + '\n')
         self.datafile.flush()
