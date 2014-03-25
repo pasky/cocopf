@@ -115,3 +115,31 @@ COCOpf's approach is different in three important aspects:
   * It allows not just for benchmarking, but also for reusing
     the same code for practical black-box optimization of functions
     that are not part of COCO/BBOB.
+
+
+Post-Processing
+---------------
+
+In addition to the **bbob_pproc** tools of COCO that you have on your
+disposal (e.g. ``rungeneric.py``), COCOpf includes also its own
+analysis and post-processing utilities that are geared at exploring
+the effect of strategies relative to the portfolio rather than on
+raw optimization performance.
+
+The first step is to pickle your current portfolio dataset collection.
+Let's assume ``data-alg`` directory contains per-algorithm datasets
+and ``data-strat`` directory contains per-strategy datasets:
+
+	cocopf/pptools/pfpickle.py bestmix.pickle.gz data-alg/* -- data-strat/*
+
+Now, just to get started, let's show some plots of convergence
+to optimum for 5D functions 2, 7 and 11 - how the function value
+changes in time (IOW, budget):
+
+	cocopf/pptools/plot_conv.py bestmix.pickle.gz fval_by_budget 5  2 7 11
+
+More to come soon!
+
+The heavy lifting is all done by the ``pproc`` and ``pplot`` modules,
+easy to use from ipython or your custom scripts e.g. preparing
+figures for publication.
