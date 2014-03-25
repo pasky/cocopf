@@ -89,6 +89,11 @@ def _pds_plot_iterator(pds, dim, funcId):
         yield ('strategy', stratname, ds, _style_strategy(stratname, i))
         i += 1
 
+def _legend(ax):
+    legendfont = matplotlib.font_manager.FontProperties()
+    legendfont.set_size('small')
+    ax.legend(loc='best', ncol=3, fancybox=True, prop=legendfont)
+
 
 def fval_by_budget(ax, pds, dim=None, funcId=None, groupby=None):
     """
@@ -109,4 +114,4 @@ def fval_by_budget(ax, pds, dim=None, funcId=None, groupby=None):
     ax.grid()
     ax.set_xlabel('Budget')
     ax.set_ylabel('Best Function Values')
-    ax.legend(loc='best')
+    _legend(ax)
