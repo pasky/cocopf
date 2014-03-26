@@ -75,7 +75,7 @@ class Experiment:
         due to data file conflicts.)
         """
         self.maxfev = maxfev
-        strmaxfev = '10e%d' % int(math.log10(maxfev))
+        strmaxfev = '1e%d' % int(math.log10(maxfev))
         self.shortname = shortname
 
         if bool(os.environ.get('BBOB_FULLDIM')):

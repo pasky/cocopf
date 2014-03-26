@@ -34,7 +34,7 @@ class Population:
         # A population of solution x points
         self.points = 10. * np.random.rand(self.K, self.fi.dim) - 5.
         # A population of solution y points
-        self.values = np.zeros(self.K) + 10e10
+        self.values = np.zeros(self.K) + 1e10
         # A population of minimizers
         self.minimizers = [self._minimizer_make(i) for i in range(self.K)]
         # A population of iteration counters
@@ -81,7 +81,7 @@ class Population:
         Reinitialize a given population member.
         """
         self.points[i] = 10. * np.random.rand(self.fi.dim) - 5.
-        self.values[i] = 10e10
+        self.values[i] = 1e10
         self.minimizers[i] = self._minimizer_make(i)
         self.iters[i] = 0
 
@@ -94,7 +94,7 @@ class Population:
         Add another population member.
         """
         self.points = np.append(self.points, [10. * np.random.rand(self.fi.dim) - 5.], axis = 0)
-        self.values = np.append(self.values, [10e10], axis = 0)
+        self.values = np.append(self.values, [1e10], axis = 0)
         i = len(self.points) - 1
         self.minimizers.append(self._minimizer_make(i))
         self.iters = np.append(self.iters, [0], axis = 0)

@@ -61,10 +61,10 @@ parallel.  Let's compare the raw performance of the three algorithms
 run outside a portfolio, generating some nice graphs while we are at it:
 
 	bbob/python$ parallel -u --gnu cocopf/examples/single.py {} ::: Powell BFGS SLSQP
-	bbob/python$ cd data-10e3
-	bbob/python/data-10e3$ ../bbob_pproc/rungenericmany.py Powell BFGS SLSQP
-	bbob/python/data-10e3$ cd ../../latextemplates
-	bbob/latextemplates$ ln -s ../python/data-10e3/ppdata .
+	bbob/python$ cd data-1e3
+	bbob/python/data-1e3$ ../bbob_pproc/rungenericmany.py Powell BFGS SLSQP
+	bbob/python/data-1e3$ cd ../../latextemplates
+	bbob/latextemplates$ ln -s ../python/data-1e3/ppdata .
 	bbob/latextemplates$ pdflatex templateBBOBmany.tex
 	bbob/latextemplates$ evince templateBBOBmany.pdf
 

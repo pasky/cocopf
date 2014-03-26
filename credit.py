@@ -106,7 +106,7 @@ class PopulationCredit(object):
         We will assign fresh credit to the population, then proceed
         with accrual for members which were stepped.
         """
-        self.pop.values[np.isnan(self.pop.values)] = 10e8
+        self.pop.values[np.isnan(self.pop.values)] = 1e9
         new_credit = self.assign_method(self.pop)
 
         for i in range(self.pop.K):
