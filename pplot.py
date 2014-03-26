@@ -79,7 +79,6 @@ def _pds_plot_iterator(pds, dim, funcId):
     for (algname, ds) in pds.algds_dimfunc((dim, funcId)):
         yield ('algorithm', algname, ds, _style_algorithm(algname, i))
         i += 1
-    print (dim, funcId), pds.oracle((dim, funcId))
     yield ('oracle', 'oracle', pds.oracle((dim, funcId)), _style_oracle())
     yield ('unifpf', 'eUNIF', pds.unifpf().dictByDimFunc()[dim][funcId][0], _style_unifpf())
     i = 0
