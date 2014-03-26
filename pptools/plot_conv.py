@@ -36,6 +36,10 @@ for fid in sys.argv[4:]:
     ax = fig.add_subplot(111)
     if plottype == "fval_by_budget":
         cplot.fval_by_budget(ax, pds, dim=dim, funcId=fid)
+    elif plottype == "ert_by_target":
+        cplot.ert_by_target(ax, pds, dim=dim, funcId=fid)
+    else:
+        raise ValueError('plottype ' + plottype)
     fig.show()
 
 show()

@@ -114,3 +114,33 @@ def fval_by_budget(ax, pds, dim=None, funcId=None, groupby=None):
     ax.set_xlabel('Budget')
     ax.set_ylabel('Best Function Values')
     _legend(ax)
+
+
+def ert_by_target(ax, pds, dim=None, funcId=None):
+    """
+    Plot a rotated convergence plot.  It is essentially like fval_by_budget(),
+    but rotated by 90 degrees, showing how big budget is required to reach
+    every target.
+
+    While this is a little less intuitive at first, it allows better judgement
+    of performance impact of each strategy.  With fval_by_budget(), performance
+    change is represented by a curve phase shift, while in ert_by_target(),
+    it simply translates position on the y axis.
+    """
+    pfsize = len(pds.algds.keys())
+
+    runlengths = 10**np.linspace(0, np.log10(pds.maxevals((dim, funcId))), num=500)
+    target_values = pp.RunlengthBasedTargetValues(runlengths,
+            reference_data=pds.bestalg(None), force_different_targets_factor=10**0.004)
+    targets = target_values((funcId, dim))
+
+    for (kind, name, ds, style) in _pds_plot_iterator(pds, dim, funcId):
+        #print name, ds
+        fevs = ds.detERT(targets)
+        style['markevery'] = 64
+        ax.loglog(targets, fevs, label=name, basey=pfsize, **style)
+    ax.grid()
+    ax.set_xlim(10**2, 10**(np.log10(targets[-1])-0.2))
+    ax.set_xlabel('Function Value Targets')
+    ax.set_ylabel('Absolute ERT')
+    _legend(ax)
