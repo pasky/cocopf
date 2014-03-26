@@ -22,6 +22,7 @@ compounded with portfolios and we thus further de-emphasize statistical
 estimates of unobserved ERTs.
 """
 
+import numpy as np
 import pickle, gzip
 import sys
 
@@ -140,3 +141,29 @@ class PortfolioDataSets:
             pickleFile += '.gz'
         with gzip.open(pickleFile, 'w') as f:
             pickle.dump(self, f)
+
+    def algds_dimfunc(self, dimfun):
+        """
+        Return an iterable of (name, DataSet) tuples corresponding
+        to the given dimfun.
+        """
+        (dim, funcId) = dimfun
+        for (algname, dset) in self.algds.iteritems():
+            yield (algname, dset.dictByDimFunc()[dim][funcId][0])
+
+    def stratds_dimfunc(self, dimfun):
+        """
+        Return an iterable of (name, DataSet) tuples corresponding
+        to the given dimfun.
+        """
+        (dim, funcId) = dimfun
+        for (stratname, dset) in self.stratds.iteritems():
+            yield (stratname, dset.dictByDimFunc()[dim][funcId][0])
+
+    def maxevals(self, dimfun):
+        """
+        Return the maximum nominal budget across all algorithms; typically,
+        something around 1e5 if you run your experiments with budget 100000.
+        """
+        evals = [np.median(ds.maxevals) for (name, ds) in self.algds_dimfunc(dimfun)]
+        return max(evals) / dimfun[0]
