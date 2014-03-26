@@ -96,7 +96,13 @@ class PortfolioDataSets:
         """
         A BestAlgSet from all algorithms (like a DataSetList).
         Contains the best performance for each (instance,target) pair
-        for a given dimfun=(dim,fun) tuple.  C.f. the oracle() method.
+        for a given dimfun=(dim,fun) tuple.
+
+        The BestAlgSet represents a "left envelope" of lowest ERTs over
+        all (function, target) pairs.  C.f. the oracle() method.
+
+        Also, avoid depending on algbestfinalfunvals and similar attributes,
+        which take only reached targets but not required budgets into account.
         """
         if self._bestalg is None:
             self._bestalg = bb.bestalg.generate(self.algds)
@@ -114,7 +120,14 @@ class PortfolioDataSets:
         since it can switch between algorithms "for free" while the target
         moves ahead.
         """
-        return self.algds[self.bestalg(dimfun).algbestfinalfunvals].dictByDimFunc()[dimfun[0]][dimfun[1]][0]
+        (dim, funcId) = dimfun
+        # What is the best reachable target?
+        bestfinalfunval = max(np.median(self.bestalg(dimfun).bestfinalfunvals), 1e-8)
+        # How fast do various algorithms reach it?
+        nametargetERT = [(name, ds.detERT([bestfinalfunval])) for (name, ds) in self.algds_dimfunc(dimfun)]
+        # Pick the fastest!
+        (name, targetERT) = min(nametargetERT, key = lambda k: k[1])
+        return self.algds[name].dictByDimFunc()[dim][funcId][0]
 
     def unifpf(self):
         """
