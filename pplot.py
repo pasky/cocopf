@@ -59,7 +59,6 @@ def _style_strategy(name, i):
     del style['linestyle']
 
     style['markersize'] = 12.
-    style['markevery'] = 16
     style['markeredgewidth'] = 1.5
     style['markerfacecolor'] = 'None'
     style['markeredgecolor'] = style['color']
@@ -110,6 +109,7 @@ def fval_by_budget(ax, pds, dim=None, funcId=None, groupby=None):
         #print name, ds
         budgets = ds.funvals[:, 0]
         funvals = ds.funvals[:, 1:]
+        style['markevery'] = 16
         ax.loglog(budgets, groupby(funvals, axis=1), label=str(groupby)+' '+name, basex=pfsize, **style)
     ax.grid()
     ax.set_xlabel('Budget')
