@@ -10,6 +10,7 @@ PLOTTYPE can be just fval_by_budget for now.
 """
 
 import os
+import re
 import sys
 import time
 from pylab import *
@@ -38,6 +39,17 @@ for fid in sys.argv[4:]:
         cplot.fval_by_budget(ax, pds, dim=dim, funcId=fid)
     elif plottype == "ert_by_target":
         cplot.ert_by_target(ax, pds, dim=dim, funcId=fid)
+    elif plottype == "ert2oracle_by_target":
+        cplot.ert_by_target(ax, pds, baseline_ds=pds.oracle((dim, fid)), baseline_label='oracle', dim=dim, funcId=fid)
+    elif plottype.startswith("ert2"):
+        # e.g. ert2mUNIF7_by_target for data relative to mUNIF7
+        m = re.match("ert2(.*)_by_target", plottype)
+        if m:
+            strat = m.group(1)
+            stratds = pds.stratds[strat].dictByDimFunc()[dim][fid][0]
+            cplot.ert_by_target(ax, pds, baseline_ds=stratds, baseline_label=strat, dim=dim, funcId=fid)
+        else:
+            raise ValueError('plottype ' + plottype)
     else:
         raise ValueError('plottype ' + plottype)
     fig.show()

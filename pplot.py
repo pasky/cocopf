@@ -115,7 +115,7 @@ def fval_by_budget(ax, pds, dim=None, funcId=None, groupby=None):
     _legend(ax)
 
 
-def ert_by_target(ax, pds, dim=None, funcId=None):
+def ert_by_target(ax, pds, baseline_ds=None, baseline_label="", dim=None, funcId=None):
     """
     Plot a rotated convergence plot.  It is essentially like fval_by_budget(),
     but rotated by 90 degrees, showing how big budget is required to reach
@@ -125,6 +125,9 @@ def ert_by_target(ax, pds, dim=None, funcId=None):
     of performance impact of each strategy.  With fval_by_budget(), performance
     change is represented by a curve phase shift, while in ert_by_target(),
     it simply translates position on the y axis.
+
+    By default, absolute ERT is shown, but relative values to some baseline
+    dataset can be shown instead.
     """
     pfsize = len(pds.algds.keys())
 
@@ -133,13 +136,24 @@ def ert_by_target(ax, pds, dim=None, funcId=None):
             reference_data=pds.bestalg(None), force_different_targets_factor=10**0.004)
     targets = target_values((funcId, dim))
 
+    if baseline_ds:
+        baseline_fevs = np.array(baseline_ds.detERT(targets))
+
     for (kind, name, ds, style) in _pds_plot_iterator(pds, dim, funcId):
         #print name, ds
         fevs = ds.detERT(targets)
+        if baseline_ds:
+            fevs /= baseline_fevs
         style['markevery'] = 64
         ax.loglog(targets, fevs, label=name, basey=pfsize, **style)
     ax.grid()
     ax.set_xlim(10**2, 10**(np.log10(targets[-1])-0.2))
     ax.set_xlabel('Function Value Targets')
-    ax.set_ylabel('Absolute ERT')
+    if baseline_ds:
+        if baseline_label:
+            ax.set_ylabel('ERT rel. to ' + baseline_label)
+        else:
+            ax.set_ylabel('Relative ERT')
+    else:
+        ax.set_ylabel('Absolute ERT')
     _legend(ax)
