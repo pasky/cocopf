@@ -130,8 +130,9 @@ def fval_by_budget(ax, pds, baseline_ds=None, baseline_label="", dim=None, funcI
     if baseline_ds:
         baseline_budgets = baseline_ds.funvals[:, 0]
         baseline_funvals = groupby(baseline_ds.funvals[:, 1:], axis=1)
+        baseline_safefunvals = np.maximum(baseline_funvals, 10**-8) # eschew zeros
         # fvb is matrix with each row being [budget,funval]
-        baseline_fvb = np.transpose(np.vstack([baseline_budgets, baseline_funvals]))
+        baseline_fvb = np.transpose(np.vstack([baseline_budgets, baseline_safefunvals]))
 
     for (kind, name, ds, style) in _pds_plot_iterator(pds, dim, funcId):
         #print name, ds
