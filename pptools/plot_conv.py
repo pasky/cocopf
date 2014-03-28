@@ -31,13 +31,29 @@ pds = PortfolioDataSets(pickleFile=picklefile)
 
 np.seterr(under="ignore")
 
+def get_stratds(pds, strat):
+    if strat == 'oracle':
+        return pds.oracle((dim, fid))
+    else:
+        return pds.stratds[strat].dictByDimFunc()[dim][fid][0]
+
 for fid in sys.argv[4:]:
     fid = int(fid)
     fig = figure('r%d'%fid)
-    ax = fig.add_subplot(111)
     if plottype == "fval_by_budget":
+        ax = fig.add_subplot(111)
         cplot.fval_by_budget(ax, pds, dim=dim, funcId=fid)
+    elif plottype.startswith("fval2"):
+        m = re.match("fval2(.*)_by_budget", plottype)
+        if m:
+            strat = m.group(1)
+            stratds = get_stratds(pds, strat)
+            ax = fig.add_subplot(111)
+            cplot.fval_by_budget(ax, pds, baseline_ds=stratds, baseline_label=strat, dim=dim, funcId=fid)
+        else:
+            raise ValueError('plottype ' + plottype)
     elif plottype == "ert_by_target":
+        ax = fig.add_subplot(111)
         cplot.ert_by_target(ax, pds, dim=dim, funcId=fid)
     elif plottype == "ert2oracle_by_target":
         cplot.ert_by_target(ax, pds, baseline_ds=pds.oracle((dim, fid)), baseline_label='oracle', dim=dim, funcId=fid)

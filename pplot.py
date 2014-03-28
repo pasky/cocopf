@@ -24,8 +24,9 @@ from pylab import *
 
 sys.path.append('.')
 import bbob_pproc as bb
-import bbob_pproc.pproc as pp
 import bbob_pproc.genericsettings
+import bbob_pproc.pproc as pp
+import bbob_pproc.readalign as ra
 
 
 class GroupByMedian:
@@ -92,26 +93,56 @@ def _legend(ax):
     ax.legend(loc='best', ncol=3, fancybox=True, prop=legendfont)
 
 
-def fval_by_budget(ax, pds, dim=None, funcId=None, groupby=None):
+def _fval_label(baseline_ds, baseline_label):
+    if baseline_ds:
+        if baseline_label:
+            return 'Function Values rel. to ' + baseline_label
+        else:
+            return 'Function Values (rel.)'
+    else:
+        return 'Best Function Values'
+
+def fval_by_budget(ax, pds, baseline_ds=None, baseline_label="", dim=None, funcId=None, groupby=None):
     """
     Plot a classic "convergence plot" that shows how the function value
     approaches optimum as time passes, in terms of raw performance.
 
     groupby is the method of aggregating results of multiple instances --
     a callable, stringable object, GroupByMedian by default.
+
+    By default, raw function values (as difference to optimum) are shown,
+    but relative values to some baseline dataset can be shown instead.
     """
     if groupby is None: groupby = GroupByMedian()
     pfsize = len(pds.algds.keys())
 
+    if baseline_ds:
+        baseline_budgets = baseline_ds.funvals[:, 0]
+        baseline_funvals = groupby(baseline_ds.funvals[:, 1:], axis=1)
+        # fvb is matrix with each row being [budget,funval]
+        baseline_fvb = np.transpose(np.vstack([baseline_budgets, baseline_funvals]))
+
     for (kind, name, ds, style) in _pds_plot_iterator(pds, dim, funcId):
         #print name, ds
         budgets = ds.funvals[:, 0]
-        funvals = ds.funvals[:, 1:]
+        funvals = groupby(ds.funvals[:, 1:], axis=1)
+        fvb = np.transpose(np.vstack([budgets, funvals]))
+
+        if baseline_ds:
+            # Relativize by baseline
+            fvba = ra.alignArrayData(ra.VArrayMultiReader([fvb, baseline_fvb]))
+            budgets = fvba[:, 0]
+            funvals = fvba[:, 1] / fvba[:, 2]
+
         style['markevery'] = 16
-        ax.loglog(budgets, groupby(funvals, axis=1), label=str(groupby)+' '+name, basex=pfsize, **style)
-    ax.grid()
+        ax.loglog(budgets, funvals, label=str(groupby)+' '+name, basex=pfsize, **style)
+    if baseline_ds:
+        ax.set_yticks([1], minor=True)
     ax.set_xlabel('Budget')
-    ax.set_ylabel('Best Function Values')
+    ax.set_ylabel(_fval_label(baseline_ds, baseline_label))
+    ax.grid()
+    if baseline_ds:
+        ax.yaxis.grid(True, which = 'minor')
     _legend(ax)
 
 
