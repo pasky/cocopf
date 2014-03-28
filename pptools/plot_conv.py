@@ -37,23 +37,18 @@ def get_stratds(pds, strat):
     else:
         return pds.stratds[strat].dictByDimFunc()[dim][fid][0]
 
-for fid in sys.argv[4:]:
-    fid = int(fid)
-    fig = figure('r%d'%fid)
+def plot_by_type(pds, ax, plottype):
     if plottype == "fval_by_budget":
-        ax = fig.add_subplot(111)
         cplot.fval_by_budget(ax, pds, dim=dim, funcId=fid)
     elif plottype.startswith("fval2"):
         m = re.match("fval2(.*)_by_budget", plottype)
         if m:
             strat = m.group(1)
             stratds = get_stratds(pds, strat)
-            ax = fig.add_subplot(111)
             cplot.fval_by_budget(ax, pds, baseline_ds=stratds, baseline_label=strat, dim=dim, funcId=fid)
         else:
             raise ValueError('plottype ' + plottype)
     elif plottype == "ert_by_target":
-        ax = fig.add_subplot(111)
         cplot.ert_by_target(ax, pds, dim=dim, funcId=fid)
     elif plottype.startswith("ert2") and plottype.endswith("_by_target"):
         # e.g. ert2mUNIF7_by_target for data relative to mUNIF7
@@ -62,7 +57,6 @@ for fid in sys.argv[4:]:
         if m:
             strat = m.group(1)
             stratds = get_stratds(pds, strat)
-            ax = fig.add_subplot(111)
             cplot.ert_by_target(ax, pds, baseline_ds=stratds, baseline_label=strat, dim=dim, funcId=fid)
         else:
             raise ValueError('plottype ' + plottype)
@@ -78,7 +72,6 @@ for fid in sys.argv[4:]:
             else:
                 strat2 = ''
                 strat2ds = None
-            ax = fig.add_subplot(111)
             cplot.ert_by_ert(ax, pds,
                     baseline1_ds=strat1ds, baseline1_label=strat1,
                     baseline2_ds=strat2ds, baseline2_label=strat2,
@@ -87,6 +80,12 @@ for fid in sys.argv[4:]:
             raise ValueError('plottype ' + plottype)
     else:
         raise ValueError('plottype ' + plottype)
+
+for fid in sys.argv[4:]:
+    fid = int(fid)
+    fig = figure('r%d'%fid)
+    ax = fig.add_subplot(111)
+    plot_by_type(pds, ax, plottype)
     fig.show()
 
 show()
