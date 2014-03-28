@@ -121,6 +121,7 @@ if __name__ == "__main__":
     if pdffile is None:
         for fid in sys.argv[4:]:
             fig = fig_by_type(pds, plottype, dim, int(fid))
+            fig.set_tight_layout(True)
             fig.show()
         show()
     else:
@@ -128,5 +129,6 @@ if __name__ == "__main__":
         for fid in sys.argv[4:]:
             fig = fig_by_type(pds, plottype, dim, int(fid))
             fig.set_size_inches((11.692, 8.267)) # A4 landscape
+            fig.set_tight_layout(True)
             pdf.savefig(fig)
         pdf.close()
