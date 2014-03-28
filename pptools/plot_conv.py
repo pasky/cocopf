@@ -55,14 +55,14 @@ for fid in sys.argv[4:]:
     elif plottype == "ert_by_target":
         ax = fig.add_subplot(111)
         cplot.ert_by_target(ax, pds, dim=dim, funcId=fid)
-    elif plottype == "ert2oracle_by_target":
-        cplot.ert_by_target(ax, pds, baseline_ds=pds.oracle((dim, fid)), baseline_label='oracle', dim=dim, funcId=fid)
-    elif plottype.startswith("ert2"):
+    elif plottype.startswith("ert2") and plottype.endswith("_by_target"):
         # e.g. ert2mUNIF7_by_target for data relative to mUNIF7
+        # ert2oracle_by_target is a special case that gives nice plots!
         m = re.match("ert2(.*)_by_target", plottype)
         if m:
             strat = m.group(1)
-            stratds = pds.stratds[strat].dictByDimFunc()[dim][fid][0]
+            stratds = get_stratds(pds, strat)
+            ax = fig.add_subplot(111)
             cplot.ert_by_target(ax, pds, baseline_ds=stratds, baseline_label=strat, dim=dim, funcId=fid)
         else:
             raise ValueError('plottype ' + plottype)
