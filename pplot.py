@@ -93,9 +93,14 @@ def legend(obj, ncol=3, **kwargs):
     Show a legend.  obj can be an Axes or Figure (in that case, also pass
     handles and labels arguments).
     """
-    legendfont = matplotlib.font_manager.FontProperties()
-    legendfont.set_size('small')
-    obj.legend(ncol=ncol, fancybox=True, prop=legendfont, **kwargs)
+    # Font size handling here is a bit weird.  We specify fontsize=6
+    # in legend constructor since that affects spacing.  However, we
+    # need to manually override with 'small' later, because the original
+    # specification did not take effect on whole-figure legends (and for
+    # actual text, 6 is a wee bit small).  We get a specific cramped
+    # appearance and correct behavior for whole-figure legends this way.
+    l = obj.legend(ncol=ncol, fancybox=True, markerscale=0.66, fontsize=6, **kwargs)
+    plt.setp(l.get_texts(), fontsize='small')
 
 
 def _fval_label(baseline_ds, baseline_label, groupby):
