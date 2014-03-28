@@ -4,7 +4,7 @@
 """
 Plot convergence data of a portfolio on a given set of functions.
 
-Usage: plot_conv.py PICKLEFILE PLOTTYPE DIM FID...
+Usage: plot_conv.py [-o FILE.PDF] PICKLEFILE PLOTTYPE DIM FID...
 
 For now, see the plot_by_type() function for various options regarding
 what PLOTTYPE can be.  Get started with fval_by_budget or overview.
@@ -18,6 +18,7 @@ import re
 import sys
 import time
 from pylab import *
+from matplotlib.backends.backend_pdf import PdfPages
 
 # Add the path to bbob_pproc and cocopf
 if __name__ == "__main__":
@@ -104,6 +105,11 @@ def fig_overview(pds, dim, fid):
 
 
 if __name__ == "__main__":
+    if sys.argv[1] == '-o':
+        sys.argv.pop(1)
+        pdffile = sys.argv.pop(1)
+    else:
+        pdffile = None
     picklefile = sys.argv[1]
     plottype = sys.argv[2]
     dim = int(sys.argv[3])
@@ -112,8 +118,15 @@ if __name__ == "__main__":
 
     np.seterr(under="ignore")
 
-    for fid in sys.argv[4:]:
-        fig = fig_by_type(pds, plottype, dim, int(fid))
-        fig.show()
-
-    show()
+    if pdffile is None:
+        for fid in sys.argv[4:]:
+            fig = fig_by_type(pds, plottype, dim, int(fid))
+            fig.show()
+        show()
+    else:
+        pdf = PdfPages(pdffile)
+        for fid in sys.argv[4:]:
+            fig = fig_by_type(pds, plottype, dim, int(fid))
+            fig.set_size_inches((11.692, 8.267)) # A4 landscape
+            pdf.savefig(fig)
+        pdf.close()
