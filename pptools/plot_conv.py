@@ -95,7 +95,7 @@ def fig_by_type(pds, plottype, dim, fid):
 def fig_overview(pds, dim, fid):
     fig = figure('%d (overview)'%(fid))
     subplots = []
-    for (i, plottype) in enumerate(['fval_by_budget', 'ert_by_target', 'fval2oracle_by_budget', 'ert2oracle_by_target']):
+    for (i, plottype) in enumerate(['fval_by_budget', 'ert2oracle_by_target', 'fval2oracle_by_budget', 'ert2oracle_by_ert']):
         ax = fig.add_subplot(2, 2, 1+i)
         plot_by_type(pds, ax, plottype, dim, fid)
         subplots.append(ax)
