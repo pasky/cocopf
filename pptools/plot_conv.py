@@ -6,7 +6,8 @@ Plot convergence data of a portfolio on a given set of functions.
 
 Usage: plot_conv.py PICKLEFILE PLOTTYPE DIM FID...
 
-PLOTTYPE can be just fval_by_budget for now.
+For now, see the plot_by_type() function for various options regarding
+what PLOTTYPE can be.  Get started with fval_by_budget.
 """
 
 import os
