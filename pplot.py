@@ -191,3 +191,47 @@ def ert_by_target(ax, pds, baseline_ds=None, baseline_label="", dim=None, funcId
     ax.set_xlabel('Function Value Targets')
     ax.set_ylabel(_ert_label(baseline_ds, baseline_label))
     _legend(ax)
+
+
+def ert_by_ert(ax, pds, baseline1_ds=None, baseline1_label="", baseline2_ds=None, baseline2_label="", dim=None, funcId=None):
+    """
+    Plot the evolution of relative ERT based on changing absolute ERT.
+    It's not clear whether this will eventually be useful at all, but it
+    offers another perspective that might aid some analysis.
+    """
+    pfsize = len(pds.algds.keys())
+
+    runlengths = 10**np.linspace(0, np.log10(pds.maxevals((dim, funcId))), num=500)
+    target_values = pp.RunlengthBasedTargetValues(runlengths,
+            reference_data=pds.bestalg(None), force_different_targets_factor=10**0.004)
+    targets = target_values((funcId, dim))
+
+    if baseline1_ds:
+        baseline1_fevs = np.array(baseline1_ds.detERT(targets))
+    if baseline2_ds:
+        baseline2_fevs = np.array(baseline2_ds.detERT(targets))
+
+    for (kind, name, ds, style) in _pds_plot_iterator(pds, dim, funcId):
+        #print name, ds
+        fevs1 = ds.detERT(targets)
+        if baseline1_ds:
+            fevs1 /= baseline1_fevs
+        fevs2 = ds.detERT(targets)
+        if baseline2_ds:
+            fevs2 /= baseline2_fevs
+
+        infsx = np.nonzero(fevs1 == inf)
+        infs = infsx[0]
+        if np.size(infs) > 0:
+            #print infs
+            fevs1 = fevs1[:infs[0]-1]
+            fevs2 = fevs2[:infs[0]-1]
+
+        print name, fevs1, fevs2
+        style['markevery'] = 64
+        ax.loglog(fevs2, fevs1, label=name, basex=pfsize, basey=pfsize, **style)
+    ax.grid()
+    ax.set_xlim(0, runlengths[-1])
+    ax.set_ylabel(_ert_label(baseline1_ds, baseline1_label))
+    ax.set_xlabel(_ert_label(baseline2_ds, baseline2_label))
+    _legend(ax)

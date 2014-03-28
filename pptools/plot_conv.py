@@ -66,6 +66,25 @@ for fid in sys.argv[4:]:
             cplot.ert_by_target(ax, pds, baseline_ds=stratds, baseline_label=strat, dim=dim, funcId=fid)
         else:
             raise ValueError('plottype ' + plottype)
+    elif plottype.startswith("ert2"):
+        # e.g. ert2mUNIF7_by_ert2oracle
+        m = re.match("ert2(.*)_by_ert(?:2(.*))?", plottype)
+        if m:
+            strat1 = m.group(1)
+            strat1ds = get_stratds(pds, strat1)
+            strat2 = m.group(2)
+            if strat2 is not None:
+                strat2ds = get_stratds(pds, strat2)
+            else:
+                strat2 = ''
+                strat2ds = None
+            ax = fig.add_subplot(111)
+            cplot.ert_by_ert(ax, pds,
+                    baseline1_ds=strat1ds, baseline1_label=strat1,
+                    baseline2_ds=strat2ds, baseline2_label=strat2,
+                    dim=dim, funcId=fid)
+        else:
+            raise ValueError('plottype ' + plottype)
     else:
         raise ValueError('plottype ' + plottype)
     fig.show()
