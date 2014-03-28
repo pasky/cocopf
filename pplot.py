@@ -156,6 +156,35 @@ def fval_by_budget(ax, pds, baseline_ds=None, baseline_label="", dim=None, funcI
     if baseline_ds:
         ax.yaxis.grid(True, which = 'minor')
 
+def rank_by_budget(ax, pds, dim=None, funcId=None, groupby=None):
+    """
+    Plot each algorithm/method's rank evolving as budget increases.
+
+    groupby is the method of aggregating results of multiple instances --
+    a callable, stringable object, GroupByMedian by default.
+    """
+    if groupby is None: groupby = GroupByMedian()
+    pfsize = len(pds.algds.keys())
+
+    ranking = pds.ranking((dim, funcId), groupby)
+
+    i = 0
+    for (kind, name, ds, style) in _pds_plot_iterator(pds, dim, funcId):
+        if kind != 'algorithm' and kind != 'strategy':
+            continue
+        #print name, ds
+        budgets = ranking[:,0]
+        ranks = ranking[:,1+i]
+
+        style['markevery'] = 64
+        ax.plot(budgets, ranks, label=name, **style)
+        i += 1
+
+    ax.set_xlabel('Budget')
+    ax.set_ylabel('Rank by Function Value')
+    ax.set_xscale('log')
+    ax.grid()
+
 
 def _ert_label(baseline_ds, baseline_label):
     if baseline_ds:

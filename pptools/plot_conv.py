@@ -48,6 +48,9 @@ def plot_by_type(pds, ax, plottype, dim, fid):
             return cplot.fval_by_budget(ax, pds, baseline_ds=stratds, baseline_label=strat, dim=dim, funcId=fid)
         raise ValueError('plottype ' + plottype)
 
+    elif plottype == "rank_by_budget":
+        return cplot.rank_by_budget(ax, pds, dim=dim, funcId=fid)
+
     elif plottype == "ert_by_target":
         return cplot.ert_by_target(ax, pds, dim=dim, funcId=fid)
 
