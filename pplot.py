@@ -96,9 +96,9 @@ def _legend(ax):
 def _fval_label(baseline_ds, baseline_label):
     if baseline_ds:
         if baseline_label:
-            return 'Function Values rel. to ' + baseline_label
+            return 'Function Values Regression Rel. To ' + baseline_label
         else:
-            return 'Function Values (rel.)'
+            return 'Function Values (Rel. Regression)'
     else:
         return 'Best Function Values'
 
@@ -149,9 +149,9 @@ def fval_by_budget(ax, pds, baseline_ds=None, baseline_label="", dim=None, funcI
 def _ert_label(baseline_ds, baseline_label):
     if baseline_ds:
         if baseline_label:
-            return 'ERT rel. to ' + baseline_label
+            return 'ERT Slowdown Rel. to ' + baseline_label
         else:
-            return 'Relative ERT'
+            return 'Relative ERT Slowdown'
     else:
         return 'Absolute ERT'
 
