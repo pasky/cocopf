@@ -146,6 +146,15 @@ def fval_by_budget(ax, pds, baseline_ds=None, baseline_label="", dim=None, funcI
     _legend(ax)
 
 
+def _ert_label(baseline_ds, baseline_label):
+    if baseline_ds:
+        if baseline_label:
+            return 'ERT rel. to ' + baseline_label
+        else:
+            return 'Relative ERT'
+    else:
+        return 'Absolute ERT'
+
 def ert_by_target(ax, pds, baseline_ds=None, baseline_label="", dim=None, funcId=None):
     """
     Plot a rotated convergence plot.  It is essentially like fval_by_budget(),
@@ -180,11 +189,5 @@ def ert_by_target(ax, pds, baseline_ds=None, baseline_label="", dim=None, funcId
     ax.grid()
     ax.set_xlim(10**2, 10**(np.log10(targets[-1])-0.2))
     ax.set_xlabel('Function Value Targets')
-    if baseline_ds:
-        if baseline_label:
-            ax.set_ylabel('ERT rel. to ' + baseline_label)
-        else:
-            ax.set_ylabel('Relative ERT')
-    else:
-        ax.set_ylabel('Absolute ERT')
+    ax.set_ylabel(_ert_label(baseline_ds, baseline_label))
     _legend(ax)
