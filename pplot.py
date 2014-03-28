@@ -102,7 +102,7 @@ def _fval_label(baseline_ds, baseline_label, groupby):
     groupby = groupby.title()
     if baseline_ds:
         if baseline_label:
-            return groupby+' Function Values Regression Rel. To ' + baseline_label
+            return groupby+' Function Values Regr. Rel. To ' + baseline_label
         else:
             return groupby+' Function Values (Rel. Regression)'
     else:
