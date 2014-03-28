@@ -101,12 +101,14 @@ def fig_by_type(pds, plottype, dim, fid):
     fig = figure('%s (%s)'%(fid, plottype))
     ax = fig.add_subplot(111)
     plot_by_type(pds, ax, plottype, dim, fid)
+    fig.text(0.2, 0.2, 'F'+fid, horizontalalignment='center', verticalalignment='center', transform=ax.transAxes)
     cplot.legend(ax)
     return fig
 
 
 def fig_overview(pds, dim, fid):
     fig = figure('%s (overview)'%(fid))
+    fig.text(0.5, 0.5, 'Function '+fid, horizontalalignment='center', verticalalignment='center')
     subplots = []
     # Also potentially interesting (but hard to comprehend): ert2oracle_by_ert
     for (i, plottype) in enumerate(['fval_by_budget', 'rank_by_budget', 'fval2oracle_by_budget', 'ert2oracle_by_target']):
