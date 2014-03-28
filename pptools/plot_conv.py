@@ -74,7 +74,7 @@ def plot_by_type(pds, ax, plottype, dim, fid):
         raise ValueError('plottype ' + plottype)
 
 def fig_by_type(pds, plottype, dim, fid):
-    fig = figure('r%d'%fid)
+    fig = figure('%d (%s)'%(fid, plottype))
     ax = fig.add_subplot(111)
     plot_by_type(pds, ax, plottype, dim, fid)
     fig.show()
