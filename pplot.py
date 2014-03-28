@@ -138,7 +138,16 @@ def fval_by_budget(ax, pds, baseline_ds=None, baseline_label="", dim=None, funcI
         #print name, ds
         budgets = ds.funvals[:, 0]
         funvals = groupby(ds.funvals[:, 1:], axis=1)
-        fvb = np.transpose(np.vstack([budgets, funvals]))
+
+        # Throw away funvals after ftarget reached
+        try:
+            limit = np.nonzero(funvals < 10**-8)[0][0] + 1
+        except IndexError:
+            limit = np.size(budgets)+1
+        budgets = budgets[:limit]
+        funvals = funvals[:limit]
+
+        fvb = np.transpose(np.vstack([budgets[:limit], funvals[:limit]]))
 
         if baseline_ds:
             # Relativize by baseline
