@@ -7,7 +7,10 @@ Plot convergence data of a portfolio on a given set of functions.
 Usage: plot_conv.py PICKLEFILE PLOTTYPE DIM FID...
 
 For now, see the plot_by_type() function for various options regarding
-what PLOTTYPE can be.  Get started with fval_by_budget.
+what PLOTTYPE can be.  Get started with fval_by_budget or overview.
+
+("overview" meaning may change over time based on state-of-art plot
+types. "overview0" will always refer to the current layout.)
 """
 
 import os
@@ -78,10 +81,25 @@ def plot_by_type(pds, ax, plottype, dim, fid):
 
 
 def fig_by_type(pds, plottype, dim, fid):
+    if plottype == "overview" or plottype == "overview0":
+        return fig_overview(pds, dim, int(fid))
+
     fig = figure('%d (%s)'%(fid, plottype))
     ax = fig.add_subplot(111)
     plot_by_type(pds, ax, plottype, dim, fid)
     cplot.legend(ax)
+    return fig
+
+
+def fig_overview(pds, dim, fid):
+    fig = figure('%d (overview)'%(fid))
+    subplots = []
+    for (i, plottype) in enumerate(['fval_by_budget', 'fval2oracle_by_budget', 'ert_by_target', 'ert2oracle_by_target']):
+        ax = fig.add_subplot(2, 2, 1+i)
+        plot_by_type(pds, ax, plottype, dim, fid)
+        subplots.append(ax)
+    (handles, labels) = subplots[0].get_legend_handles_labels()
+    cplot.legend(fig, handles=handles, labels=labels, loc='upper right', ncol=8)
     return fig
 
 

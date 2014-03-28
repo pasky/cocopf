@@ -88,14 +88,14 @@ def _pds_plot_iterator(pds, dim, funcId):
         i += 1
 
 
-def legend(obj, **kwargs):
+def legend(obj, ncol=3, **kwargs):
     """
     Show a legend.  obj can be an Axes or Figure (in that case, also pass
     handles and labels arguments).
     """
     legendfont = matplotlib.font_manager.FontProperties()
     legendfont.set_size('small')
-    obj.legend(loc='best', ncol=3, fancybox=True, prop=legendfont, **kwargs)
+    obj.legend(ncol=ncol, fancybox=True, prop=legendfont, **kwargs)
 
 
 def _fval_label(baseline_ds, baseline_label, groupby):
