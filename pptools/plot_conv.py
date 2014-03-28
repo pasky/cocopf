@@ -11,6 +11,9 @@ what PLOTTYPE can be.  Get started with fval_by_budget or overview.
 
 ("overview" meaning may change over time based on state-of-art plot
 types. "overview0" will always refer to the current layout.)
+
+In case of PLOTTYPE "rank_by_budget", FID may be multiple comma-separated
+functions that will be averaged.
 """
 
 import os
@@ -39,6 +42,11 @@ def get_stratds(pds, strat, dim, fid):
 
 
 def plot_by_type(pds, ax, plottype, dim, fid):
+    if fid.count(',') > 0:
+        fid = [int(i) for i in fid.split(',')]
+    else:
+        fid = int(fid)
+
     if plottype == "fval_by_budget":
         return cplot.fval_by_budget(ax, pds, dim=dim, funcId=fid)
 
@@ -88,9 +96,9 @@ def plot_by_type(pds, ax, plottype, dim, fid):
 
 def fig_by_type(pds, plottype, dim, fid):
     if plottype == "overview" or plottype == "overview0":
-        return fig_overview(pds, dim, int(fid))
+        return fig_overview(pds, dim, fid)
 
-    fig = figure('%d (%s)'%(fid, plottype))
+    fig = figure('%s (%s)'%(fid, plottype))
     ax = fig.add_subplot(111)
     plot_by_type(pds, ax, plottype, dim, fid)
     cplot.legend(ax)
@@ -98,7 +106,7 @@ def fig_by_type(pds, plottype, dim, fid):
 
 
 def fig_overview(pds, dim, fid):
-    fig = figure('%d (overview)'%(fid))
+    fig = figure('%s (overview)'%(fid))
     subplots = []
     for (i, plottype) in enumerate(['fval_by_budget', 'ert2oracle_by_target', 'fval2oracle_by_budget', 'ert2oracle_by_ert']):
         ax = fig.add_subplot(2, 2, 1+i)
@@ -126,7 +134,7 @@ if __name__ == "__main__":
     if pdffile is None:
         for fid in sys.argv[4:]:
             print 'figure', plottype, dim, fid
-            fig = fig_by_type(pds, plottype, dim, int(fid))
+            fig = fig_by_type(pds, plottype, dim, fid)
             fig.set_tight_layout(True)
             fig.show()
         show()
@@ -134,7 +142,7 @@ if __name__ == "__main__":
         pdf = PdfPages(pdffile)
         for fid in sys.argv[4:]:
             print 'figure', plottype, dim, fid
-            fig = fig_by_type(pds, plottype, dim, int(fid))
+            fig = fig_by_type(pds, plottype, dim, fid)
             fig.set_size_inches((11.692, 8.267)) # A4 landscape
             fig.set_tight_layout(True)
             pdf.savefig(fig)

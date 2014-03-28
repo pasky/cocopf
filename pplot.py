@@ -162,14 +162,31 @@ def rank_by_budget(ax, pds, dim=None, funcId=None, groupby=None):
 
     groupby is the method of aggregating results of multiple instances --
     a callable, stringable object, GroupByMedian by default.
+
+    Note that funcId may be an array of id numbers; in that case,
+    an average rank over listed functions is taken.
     """
     if groupby is None: groupby = GroupByMedian()
     pfsize = len(pds.algds.keys())
 
-    ranking = pds.ranking((dim, funcId), groupby)
+    try: # funcId is array?
+        # _pds_plot_iterator[] uses funcId only for things we don't care for
+        fakeFuncId = funcId[0]
+
+        manyranking = np.array([pds.ranking((dim, i), groupby) for i in funcId])
+        rankcount = np.shape(manyranking[0])[1] - 1
+        amanyranking = ra.alignArrayData(ra.VArrayMultiReader(manyranking))
+        budget = amanyranking[:,0]
+        rankings = np.hsplit(amanyranking[:,1:], len(funcId))
+        avgranking = np.average(rankings, axis=0)
+        ranking = np.vstack([budget, avgranking.T]).T
+
+    except TypeError: # funcId is scalar
+        fakeFuncId = funcId
+        ranking = pds.ranking((dim, funcId), groupby)
 
     i = 0
-    for (kind, name, ds, style) in _pds_plot_iterator(pds, dim, funcId):
+    for (kind, name, ds, style) in _pds_plot_iterator(pds, dim, fakeFuncId):
         if kind != 'algorithm' and kind != 'strategy':
             continue
         #print name, ds
