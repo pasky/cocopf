@@ -32,6 +32,8 @@ import cocopf.pplot as cplot
 def get_stratds(pds, strat, dim, fid):
     if strat == 'oracle':
         return pds.oracle((dim, fid))
+    elif strat == 'envelope':
+        return pds.bestalg((dim, fid))
     else:
         return pds.stratds[strat].dictByDimFunc()[dim][fid][0]
 
