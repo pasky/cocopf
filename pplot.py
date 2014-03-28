@@ -98,14 +98,15 @@ def legend(obj, **kwargs):
     obj.legend(loc='best', ncol=3, fancybox=True, prop=legendfont, **kwargs)
 
 
-def _fval_label(baseline_ds, baseline_label):
+def _fval_label(baseline_ds, baseline_label, groupby):
+    groupby = groupby.title()
     if baseline_ds:
         if baseline_label:
-            return 'Function Values Regression Rel. To ' + baseline_label
+            return groupby+' Function Values Regression Rel. To ' + baseline_label
         else:
-            return 'Function Values (Rel. Regression)'
+            return groupby+' Function Values (Rel. Regression)'
     else:
-        return 'Best Function Values'
+        return groupby+' Best Function Values'
 
 def fval_by_budget(ax, pds, baseline_ds=None, baseline_label="", dim=None, funcId=None, groupby=None):
     """
@@ -140,11 +141,11 @@ def fval_by_budget(ax, pds, baseline_ds=None, baseline_label="", dim=None, funcI
             funvals = fvba[:, 1] / fvba[:, 2]
 
         style['markevery'] = 16
-        ax.loglog(budgets, funvals, label=str(groupby)+' '+name, basex=pfsize, **style)
+        ax.loglog(budgets, funvals, label=name, basex=pfsize, **style)
     if baseline_ds:
         ax.set_yticks([1], minor=True)
     ax.set_xlabel('Budget')
-    ax.set_ylabel(_fval_label(baseline_ds, baseline_label))
+    ax.set_ylabel(_fval_label(baseline_ds, baseline_label, str(groupby)))
     ax.grid()
     if baseline_ds:
         ax.yaxis.grid(True, which = 'minor')
