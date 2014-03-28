@@ -23,28 +23,20 @@ if __name__ == "__main__":
 from cocopf.pproc import PortfolioDataSets
 import cocopf.pplot as cplot
 
-picklefile = sys.argv[1]
-plottype = sys.argv[2]
-dim = int(sys.argv[3])
-
-pds = PortfolioDataSets(pickleFile=picklefile)
-
-np.seterr(under="ignore")
-
-def get_stratds(pds, strat):
+def get_stratds(pds, strat, dim, fid):
     if strat == 'oracle':
         return pds.oracle((dim, fid))
     else:
         return pds.stratds[strat].dictByDimFunc()[dim][fid][0]
 
-def plot_by_type(pds, ax, plottype):
+def plot_by_type(pds, ax, plottype, dim, fid):
     if plottype == "fval_by_budget":
         cplot.fval_by_budget(ax, pds, dim=dim, funcId=fid)
     elif plottype.startswith("fval2"):
         m = re.match("fval2(.*)_by_budget", plottype)
         if m:
             strat = m.group(1)
-            stratds = get_stratds(pds, strat)
+            stratds = get_stratds(pds, strat, dim, fid)
             cplot.fval_by_budget(ax, pds, baseline_ds=stratds, baseline_label=strat, dim=dim, funcId=fid)
         else:
             raise ValueError('plottype ' + plottype)
@@ -56,7 +48,7 @@ def plot_by_type(pds, ax, plottype):
         m = re.match("ert2(.*)_by_target", plottype)
         if m:
             strat = m.group(1)
-            stratds = get_stratds(pds, strat)
+            stratds = get_stratds(pds, strat, dim, fid)
             cplot.ert_by_target(ax, pds, baseline_ds=stratds, baseline_label=strat, dim=dim, funcId=fid)
         else:
             raise ValueError('plottype ' + plottype)
@@ -65,10 +57,10 @@ def plot_by_type(pds, ax, plottype):
         m = re.match("ert2(.*)_by_ert(?:2(.*))?", plottype)
         if m:
             strat1 = m.group(1)
-            strat1ds = get_stratds(pds, strat1)
+            strat1ds = get_stratds(pds, strat1, dim, fid)
             strat2 = m.group(2)
             if strat2 is not None:
-                strat2ds = get_stratds(pds, strat2)
+                strat2ds = get_stratds(pds, strat2, dim, fid)
             else:
                 strat2 = ''
                 strat2ds = None
@@ -81,11 +73,20 @@ def plot_by_type(pds, ax, plottype):
     else:
         raise ValueError('plottype ' + plottype)
 
-for fid in sys.argv[4:]:
-    fid = int(fid)
-    fig = figure('r%d'%fid)
-    ax = fig.add_subplot(111)
-    plot_by_type(pds, ax, plottype)
-    fig.show()
+if __name__ == "__main__":
+    picklefile = sys.argv[1]
+    plottype = sys.argv[2]
+    dim = int(sys.argv[3])
 
-show()
+    pds = PortfolioDataSets(pickleFile=picklefile)
+
+    np.seterr(under="ignore")
+
+    for fid in sys.argv[4:]:
+        fid = int(fid)
+        fig = figure('r%d'%fid)
+        ax = fig.add_subplot(111)
+        plot_by_type(pds, ax, plottype, dim, fid)
+        fig.show()
+
+    show()
