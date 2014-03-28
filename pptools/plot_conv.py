@@ -73,6 +73,12 @@ def plot_by_type(pds, ax, plottype, dim, fid):
     else:
         raise ValueError('plottype ' + plottype)
 
+def fig_by_type(pds, plottype, dim, fid):
+    fig = figure('r%d'%fid)
+    ax = fig.add_subplot(111)
+    plot_by_type(pds, ax, plottype, dim, fid)
+    fig.show()
+
 if __name__ == "__main__":
     picklefile = sys.argv[1]
     plottype = sys.argv[2]
@@ -83,10 +89,6 @@ if __name__ == "__main__":
     np.seterr(under="ignore")
 
     for fid in sys.argv[4:]:
-        fid = int(fid)
-        fig = figure('r%d'%fid)
-        ax = fig.add_subplot(111)
-        plot_by_type(pds, ax, plottype, dim, fid)
-        fig.show()
+        fig_by_type(pds, plottype, dim, int(fid))
 
     show()
