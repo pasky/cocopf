@@ -241,6 +241,6 @@ def ert_by_ert(ax, pds, baseline1_ds=None, baseline1_label="", baseline2_ds=None
         style['markevery'] = 64
         ax.loglog(fevs2, fevs1, label=name, basex=pfsize, basey=pfsize, **style)
     ax.grid()
-    ax.set_xlim(0, runlengths[-1])
+    ax.set_xlim(0, runlengths[-1] * pfsize) # i.e. log(runlengths) + 1
     ax.set_ylabel(_ert_label(baseline1_ds, baseline1_label))
     ax.set_xlabel(_ert_label(baseline2_ds, baseline2_label))
