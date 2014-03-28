@@ -23,15 +23,18 @@ if __name__ == "__main__":
 from cocopf.pproc import PortfolioDataSets
 import cocopf.pplot as cplot
 
+
 def get_stratds(pds, strat, dim, fid):
     if strat == 'oracle':
         return pds.oracle((dim, fid))
     else:
         return pds.stratds[strat].dictByDimFunc()[dim][fid][0]
 
+
 def plot_by_type(pds, ax, plottype, dim, fid):
     if plottype == "fval_by_budget":
         cplot.fval_by_budget(ax, pds, dim=dim, funcId=fid)
+
     elif plottype.startswith("fval2"):
         m = re.match("fval2(.*)_by_budget", plottype)
         if m:
@@ -40,8 +43,10 @@ def plot_by_type(pds, ax, plottype, dim, fid):
             cplot.fval_by_budget(ax, pds, baseline_ds=stratds, baseline_label=strat, dim=dim, funcId=fid)
         else:
             raise ValueError('plottype ' + plottype)
+
     elif plottype == "ert_by_target":
         cplot.ert_by_target(ax, pds, dim=dim, funcId=fid)
+
     elif plottype.startswith("ert2") and plottype.endswith("_by_target"):
         # e.g. ert2mUNIF7_by_target for data relative to mUNIF7
         # ert2oracle_by_target is a special case that gives nice plots!
@@ -52,6 +57,7 @@ def plot_by_type(pds, ax, plottype, dim, fid):
             cplot.ert_by_target(ax, pds, baseline_ds=stratds, baseline_label=strat, dim=dim, funcId=fid)
         else:
             raise ValueError('plottype ' + plottype)
+
     elif plottype.startswith("ert2"):
         # e.g. ert2mUNIF7_by_ert2oracle
         m = re.match("ert2(.*)_by_ert(?:2(.*))?", plottype)
@@ -70,14 +76,17 @@ def plot_by_type(pds, ax, plottype, dim, fid):
                     dim=dim, funcId=fid)
         else:
             raise ValueError('plottype ' + plottype)
+
     else:
         raise ValueError('plottype ' + plottype)
+
 
 def fig_by_type(pds, plottype, dim, fid):
     fig = figure('%d (%s)'%(fid, plottype))
     ax = fig.add_subplot(111)
     plot_by_type(pds, ax, plottype, dim, fid)
     fig.show()
+
 
 if __name__ == "__main__":
     picklefile = sys.argv[1]
