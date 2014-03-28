@@ -81,6 +81,7 @@ def fig_by_type(pds, plottype, dim, fid):
     fig = figure('%d (%s)'%(fid, plottype))
     ax = fig.add_subplot(111)
     plot_by_type(pds, ax, plottype, dim, fid)
+    cplot.legend(ax)
     return fig
 
 

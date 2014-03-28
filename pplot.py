@@ -87,7 +87,8 @@ def _pds_plot_iterator(pds, dim, funcId):
         yield ('strategy', stratname, ds, _style_strategy(stratname, i))
         i += 1
 
-def _legend(ax):
+
+def legend(ax):
     legendfont = matplotlib.font_manager.FontProperties()
     legendfont.set_size('small')
     ax.legend(loc='best', ncol=3, fancybox=True, prop=legendfont)
@@ -143,7 +144,6 @@ def fval_by_budget(ax, pds, baseline_ds=None, baseline_label="", dim=None, funcI
     ax.grid()
     if baseline_ds:
         ax.yaxis.grid(True, which = 'minor')
-    _legend(ax)
 
 
 def _ert_label(baseline_ds, baseline_label):
@@ -190,7 +190,6 @@ def ert_by_target(ax, pds, baseline_ds=None, baseline_label="", dim=None, funcId
     ax.set_xlim(10**2, 10**(np.log10(targets[-1])-0.2))
     ax.set_xlabel('Function Value Targets')
     ax.set_ylabel(_ert_label(baseline_ds, baseline_label))
-    _legend(ax)
 
 
 def ert_by_ert(ax, pds, baseline1_ds=None, baseline1_label="", baseline2_ds=None, baseline2_label="", dim=None, funcId=None):
@@ -234,4 +233,3 @@ def ert_by_ert(ax, pds, baseline1_ds=None, baseline1_label="", baseline2_ds=None
     ax.set_xlim(0, runlengths[-1])
     ax.set_ylabel(_ert_label(baseline1_ds, baseline1_label))
     ax.set_xlabel(_ert_label(baseline2_ds, baseline2_label))
-    _legend(ax)
