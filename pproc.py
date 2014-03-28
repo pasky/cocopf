@@ -193,8 +193,13 @@ class PortfolioDataSets:
         element and ranks for individual algorithms and strategies
         as the second element (in the order of the strategies in the
         output of algds_dimfunc(), and stratds_dimfunc() respectively).
+
+        The ranks are always computed based on function values after
+        a particular budget.  If multiple algorithms reach ftarget,
+        they are ranked by the order in which they did.
         """
         nameds = list(itertools.chain(self.algds_dimfunc(dimfun), self.stratds_dimfunc(dimfun)))
+        count = len(nameds)
 
         # Produce "fv" items, one per dataset, containing single function value
         # for each budget
@@ -208,7 +213,23 @@ class PortfolioDataSets:
         # Align the "fv" items by budget and merge them
         fva = ra.alignArrayData(ra.VArrayMultiReader(fvset))
         budgets = fva[:,0]
-        # Rank function values for each budget
-        ranks = ss.mstats.rankdata(fva[:, 1:], axis=1)
+
+        # Assign function values and rank them
+        # However, we want to resolve eventual ties by ranking first
+        # converging function first. So we do a trick and rewrite ftarget
+        # values in increasing convergence sort order.
+        values = fva[:,1:].copy()
+        firstconv = np.ones(count) * (np.size(budgets)+1) # runlength+1 is default
+        for i in range(count): # XXX: drop the loop
+            try:
+                firstconv[i] = np.nonzero(values[:,i] == ftarget)[0][0]
+            except IndexError:
+                continue # no rewriting needed
+        firstconvranks = ss.mstats.rankdata(firstconv)
+        for i in range(count):
+            r = firstconvranks[i]
+            values[firstconv[i]:, i] = ftarget - (1-r/count)*ftarget
+
+        ranks = ss.mstats.rankdata(values, axis=1)
 
         return np.transpose(np.vstack([budgets, ranks.T]))
