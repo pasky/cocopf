@@ -85,7 +85,7 @@ def fig_by_type(pds, plottype, dim, fid):
     fig = figure('%d (%s)'%(fid, plottype))
     ax = fig.add_subplot(111)
     plot_by_type(pds, ax, plottype, dim, fid)
-    fig.show()
+    return fig
 
 
 if __name__ == "__main__":
@@ -98,6 +98,7 @@ if __name__ == "__main__":
     np.seterr(under="ignore")
 
     for fid in sys.argv[4:]:
-        fig_by_type(pds, plottype, dim, int(fid))
+        fig = fig_by_type(pds, plottype, dim, int(fid))
+        fig.show()
 
     show()
