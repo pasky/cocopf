@@ -237,7 +237,7 @@ def ert_by_ert(ax, pds, baseline1_ds=None, baseline1_label="", baseline2_ds=None
             fevs1 = fevs1[:infs[0]-1]
             fevs2 = fevs2[:infs[0]-1]
 
-        print name, fevs1, fevs2
+        #print name, fevs1, fevs2
         style['markevery'] = 64
         ax.loglog(fevs2, fevs1, label=name, basex=pfsize, basey=pfsize, **style)
     ax.grid()
