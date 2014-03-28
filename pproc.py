@@ -22,14 +22,17 @@ compounded with portfolios and we thus further de-emphasize statistical
 estimates of unobserved ERTs.
 """
 
+import itertools
 import numpy as np
 import pickle, gzip
+import scipy.stats as ss
 import sys
 
 sys.path.append('.')
 import bbob_pproc as bb
 import bbob_pproc.algportfolio
 import bbob_pproc.bestalg
+import bbob_pproc.readalign as ra
 
 
 class PortfolioDataSets:
@@ -180,3 +183,32 @@ class PortfolioDataSets:
         """
         evals = [np.median(ds.maxevals) for (name, ds) in self.algds_dimfunc(dimfun)]
         return max(evals) / dimfun[0]
+
+    def ranking(self, dimfun, groupby, ftarget=10**-8):
+        """
+        Produce a set of function evaluation ranks over all algorithms
+        and strategies.
+
+        Returns a set of rows where each row contains a budget as first
+        element and ranks for individual algorithms and strategies
+        as the second element (in the order of the strategies in the
+        output of algds_dimfunc(), and stratds_dimfunc() respectively).
+        """
+        nameds = list(itertools.chain(self.algds_dimfunc(dimfun), self.stratds_dimfunc(dimfun)))
+
+        # Produce "fv" items, one per dataset, containing single function value
+        # for each budget
+        fvset = []
+        for (name, ds) in nameds:
+            budgets = ds.funvals[:,0]
+            f1vals = np.maximum(groupby(ds.funvals[:, 1:], axis=1), ftarget)
+            fv = np.transpose(np.vstack([budgets, f1vals]))
+            fvset.append(fv)
+
+        # Align the "fv" items by budget and merge them
+        fva = ra.alignArrayData(ra.VArrayMultiReader(fvset))
+        budgets = fva[:,0]
+        # Rank function values for each budget
+        ranks = ss.mstats.rankdata(fva[:, 1:], axis=1)
+
+        return np.transpose(np.vstack([budgets, ranks.T]))
