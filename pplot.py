@@ -205,7 +205,10 @@ def ert_by_target(ax, pds, baseline_ds=None, baseline_label="", dim=None, funcId
 
 def ert_by_ert(ax, pds, baseline1_ds=None, baseline1_label="", baseline2_ds=None, baseline2_label="", dim=None, funcId=None):
     """
-    Plot the evolution of relative ERT based on changing absolute ERT.
+    Plot the evolution of relative ERT for a target based on increasing
+    absolute ERT.  In other words, for each absolute ERT, determine the
+    target reached and show how faster did baseline reach it.
+
     It's not clear whether this will eventually be useful at all, but it
     offers another perspective that might aid some analysis.
     """
@@ -242,5 +245,5 @@ def ert_by_ert(ax, pds, baseline1_ds=None, baseline1_label="", baseline2_ds=None
         ax.loglog(fevs2, fevs1, label=name, basex=pfsize, basey=pfsize, **style)
     ax.grid()
     ax.set_xlim(0, runlengths[-1] * pfsize) # i.e. log(runlengths) + 1
-    ax.set_ylabel(_ert_label(baseline1_ds, baseline1_label))
-    ax.set_xlabel(_ert_label(baseline2_ds, baseline2_label))
+    ax.set_ylabel('Per-target' + _ert_label(baseline1_ds, baseline1_label))
+    ax.set_xlabel('Per-target' + _ert_label(baseline2_ds, baseline2_label))
