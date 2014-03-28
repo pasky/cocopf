@@ -34,19 +34,18 @@ def get_stratds(pds, strat, dim, fid):
 
 def plot_by_type(pds, ax, plottype, dim, fid):
     if plottype == "fval_by_budget":
-        cplot.fval_by_budget(ax, pds, dim=dim, funcId=fid)
+        return cplot.fval_by_budget(ax, pds, dim=dim, funcId=fid)
 
     elif plottype.startswith("fval2"):
         m = re.match("fval2(.*)_by_budget", plottype)
         if m:
             strat = m.group(1)
             stratds = get_stratds(pds, strat, dim, fid)
-            cplot.fval_by_budget(ax, pds, baseline_ds=stratds, baseline_label=strat, dim=dim, funcId=fid)
-        else:
-            raise ValueError('plottype ' + plottype)
+            return cplot.fval_by_budget(ax, pds, baseline_ds=stratds, baseline_label=strat, dim=dim, funcId=fid)
+        raise ValueError('plottype ' + plottype)
 
     elif plottype == "ert_by_target":
-        cplot.ert_by_target(ax, pds, dim=dim, funcId=fid)
+        return cplot.ert_by_target(ax, pds, dim=dim, funcId=fid)
 
     elif plottype.startswith("ert2") and plottype.endswith("_by_target"):
         # e.g. ert2mUNIF7_by_target for data relative to mUNIF7
@@ -55,9 +54,8 @@ def plot_by_type(pds, ax, plottype, dim, fid):
         if m:
             strat = m.group(1)
             stratds = get_stratds(pds, strat, dim, fid)
-            cplot.ert_by_target(ax, pds, baseline_ds=stratds, baseline_label=strat, dim=dim, funcId=fid)
-        else:
-            raise ValueError('plottype ' + plottype)
+            return cplot.ert_by_target(ax, pds, baseline_ds=stratds, baseline_label=strat, dim=dim, funcId=fid)
+        raise ValueError('plottype ' + plottype)
 
     elif plottype.startswith("ert2"):
         # e.g. ert2mUNIF7_by_ert2oracle
@@ -71,15 +69,12 @@ def plot_by_type(pds, ax, plottype, dim, fid):
             else:
                 strat2 = ''
                 strat2ds = None
-            cplot.ert_by_ert(ax, pds,
+            return cplot.ert_by_ert(ax, pds,
                     baseline1_ds=strat1ds, baseline1_label=strat1,
                     baseline2_ds=strat2ds, baseline2_label=strat2,
                     dim=dim, funcId=fid)
-        else:
-            raise ValueError('plottype ' + plottype)
-
-    else:
         raise ValueError('plottype ' + plottype)
+    raise ValueError('plottype ' + plottype)
 
 
 def fig_by_type(pds, plottype, dim, fid):
