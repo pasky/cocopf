@@ -61,22 +61,22 @@ def plot_by_type(pds, ax, plottype, dim, fid):
     elif plottype == "rank_by_budget":
         return cplot.rank_by_budget(ax, pds, dim=dim, funcId=fid)
 
-    elif plottype == "ert_by_target":
-        return cplot.ert_by_target(ax, pds, dim=dim, funcId=fid)
+    elif plottype == "evals_by_target":
+        return cplot.evals_by_target(ax, pds, dim=dim, funcId=fid)
 
-    elif plottype.startswith("ert2") and plottype.endswith("_by_target"):
-        # e.g. ert2mUNIF7_by_target for data relative to mUNIF7
-        # ert2oracle_by_target is a special case that gives nice plots!
-        m = re.match("ert2(.*)_by_target", plottype)
+    elif plottype.startswith("evals2") and plottype.endswith("_by_target"):
+        # e.g. evals2mUNIF7_by_target for data relative to mUNIF7
+        # evals2oracle_by_target is a special case that gives nice plots!
+        m = re.match("evals2(.*)_by_target", plottype)
         if m:
             strat = m.group(1)
             stratds = get_stratds(pds, strat, dim, fid)
-            return cplot.ert_by_target(ax, pds, baseline_ds=stratds, baseline_label=strat, dim=dim, funcId=fid)
+            return cplot.evals_by_target(ax, pds, baseline_ds=stratds, baseline_label=strat, dim=dim, funcId=fid)
         raise ValueError('plottype ' + plottype)
 
-    elif plottype.startswith("ert2"):
-        # e.g. ert2mUNIF7_by_ert2oracle
-        m = re.match("ert2(.*)_by_ert(?:2(.*))?", plottype)
+    elif plottype.startswith("evals2"):
+        # e.g. evals2mUNIF7_by_evals2oracle
+        m = re.match("evals2(.*)_by_evals(?:2(.*))?", plottype)
         if m:
             strat1 = m.group(1)
             strat1ds = get_stratds(pds, strat1, dim, fid)
@@ -86,7 +86,7 @@ def plot_by_type(pds, ax, plottype, dim, fid):
             else:
                 strat2 = ''
                 strat2ds = None
-            return cplot.ert_by_ert(ax, pds,
+            return cplot.evals_by_evals(ax, pds,
                     baseline1_ds=strat1ds, baseline1_label=strat1,
                     baseline2_ds=strat2ds, baseline2_label=strat2,
                     dim=dim, funcId=fid)
@@ -110,8 +110,9 @@ def fig_overview(pds, dim, fid):
     fig = figure('%s (overview)'%(fid))
     fig.text(0.5, 0.5, 'Function '+fid, horizontalalignment='center', verticalalignment='center')
     subplots = []
-    # Also potentially interesting (but hard to comprehend): ert2oracle_by_ert
-    for (i, plottype) in enumerate(['fval_by_budget', 'rank_by_budget', 'fval2oracle_by_budget', 'ert2oracle_by_target']):
+    # Also potentially interesting (but hard to comprehend):
+    # evals2oracle_by_evals
+    for (i, plottype) in enumerate(['fval_by_budget', 'rank_by_budget', 'fval2oracle_by_budget', 'evals2oracle_by_target']):
         ax = fig.add_subplot(2, 2, 1+i)
         plot_by_type(pds, ax, plottype, dim, fid)
         subplots.append(ax)

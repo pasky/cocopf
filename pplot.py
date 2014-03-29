@@ -212,16 +212,17 @@ def rank_by_budget(ax, pds, dim=None, funcId=None, groupby=None):
     ax.grid()
 
 
-def _ert_label(baseline_ds, baseline_label):
+def _evals_label(baseline_ds, baseline_label, groupby):
+    groupby = groupby.title()
     if baseline_ds:
         if baseline_label:
-            return 'ERT Slowdown Rel. to ' + baseline_label
+            return groupby+' Eval.# Slowdown Rel. to ' + baseline_label
         else:
-            return 'Relative ERT Slowdown'
+            return groupby+' Relative Eval.# Slowdown'
     else:
-        return 'Absolute ERT'
+        return groupby+' Absolute Eval.#'
 
-def ert_by_target(ax, pds, baseline_ds=None, baseline_label="", dim=None, funcId=None):
+def evals_by_target(ax, pds, baseline_ds=None, baseline_label="", dim=None, funcId=None, groupby=None):
     """
     Plot a rotated convergence plot.  It is essentially like fval_by_budget(),
     but rotated by 90 degrees, showing how big budget is required to reach
@@ -229,12 +230,16 @@ def ert_by_target(ax, pds, baseline_ds=None, baseline_label="", dim=None, funcId
 
     While this is a little less intuitive at first, it allows better judgement
     of performance impact of each strategy.  With fval_by_budget(), performance
-    change is represented by a curve phase shift, while in ert_by_target(),
+    change is represented by a curve phase shift, while in evals_by_target(),
     it simply translates position on the y axis.
 
-    By default, absolute ERT is shown, but relative values to some baseline
-    dataset can be shown instead.
+    groupby is the method of aggregating results of multiple instances --
+    a callable, stringable object, GroupByMedian by default.
+
+    By default, absolute evaluations count is shown, but relative values to
+    some baseline dataset can be shown instead.
     """
+    if groupby is None: groupby = GroupByMedian()
     pfsize = len(pds.algds.keys())
 
     runlengths = 10**np.linspace(0, np.log10(pds.maxevals((dim, funcId))), num=500)
@@ -243,11 +248,11 @@ def ert_by_target(ax, pds, baseline_ds=None, baseline_label="", dim=None, funcId
     targets = target_values((funcId, dim))
 
     if baseline_ds:
-        baseline_fevs = np.array(baseline_ds.detERT(targets))
+        baseline_fevs = groupby(baseline_ds.detEvals(targets), axis=1)
 
     for (kind, name, ds, style) in _pds_plot_iterator(pds, dim, funcId):
         #print name, ds
-        fevs = ds.detERT(targets)
+        fevs = groupby(ds.detEvals(targets), axis=1)
         if baseline_ds:
             fevs /= baseline_fevs
         style['markevery'] = 64
@@ -256,21 +261,26 @@ def ert_by_target(ax, pds, baseline_ds=None, baseline_label="", dim=None, funcId
     if baseline_ds:
         ax.set_yticks([2, 3.5], minor=True)
     ax.set_xlabel('Function Value Targets')
-    ax.set_ylabel(_ert_label(baseline_ds, baseline_label))
+    ax.set_ylabel(_evals_label(baseline_ds, baseline_label, str(groupby)))
     ax.grid()
     if baseline_ds:
         ax.yaxis.grid(True, which = 'minor')
 
 
-def ert_by_ert(ax, pds, baseline1_ds=None, baseline1_label="", baseline2_ds=None, baseline2_label="", dim=None, funcId=None):
+def evals_by_evals(ax, pds, baseline1_ds=None, baseline1_label="", baseline2_ds=None, baseline2_label="", dim=None, funcId=None, groupby=None):
     """
-    Plot the evolution of relative ERT for a target based on increasing
-    absolute ERT.  In other words, for each absolute ERT, determine the
-    target reached and show how faster did baseline reach it.
+    Plot the evolution of relative #evaluations for a target based on
+    increasing absolute #evaluations.  In other words, for each absolute
+    number of evaluations, determine the target reached and show how faster
+    did baseline reach it.
+
+    groupby is the method of aggregating results of multiple instances --
+    a callable, stringable object, GroupByMedian by default.
 
     It's not clear whether this will eventually be useful at all, but it
     offers another perspective that might aid some analysis.
     """
+    if groupby is None: groupby = GroupByMedian()
     pfsize = len(pds.algds.keys())
 
     runlengths = 10**np.linspace(0, np.log10(pds.maxevals((dim, funcId))), num=500)
@@ -279,16 +289,16 @@ def ert_by_ert(ax, pds, baseline1_ds=None, baseline1_label="", baseline2_ds=None
     targets = target_values((funcId, dim))
 
     if baseline1_ds:
-        baseline1_fevs = np.array(baseline1_ds.detERT(targets))
+        baseline1_fevs = np.array(groupby(baseline1_ds.detEvals(targets), axis=1))
     if baseline2_ds:
-        baseline2_fevs = np.array(baseline2_ds.detERT(targets))
+        baseline2_fevs = np.array(groupby(baseline2_ds.detEvals(targets), axis=1))
 
     for (kind, name, ds, style) in _pds_plot_iterator(pds, dim, funcId):
         #print name, ds
-        fevs1 = ds.detERT(targets)
+        fevs1 = groupby(ds.detEvals(targets), axis=1)
         if baseline1_ds:
             fevs1 /= baseline1_fevs
-        fevs2 = ds.detERT(targets)
+        fevs2 = groupby(ds.detEvals(targets), axis=1)
         if baseline2_ds:
             fevs2 /= baseline2_fevs
 
@@ -304,5 +314,5 @@ def ert_by_ert(ax, pds, baseline1_ds=None, baseline1_label="", baseline2_ds=None
         ax.loglog(fevs2, fevs1, label=name, basex=pfsize, basey=pfsize, **style)
     ax.grid()
     ax.set_xlim(0, runlengths[-1] * pfsize) # i.e. log(runlengths) + 1
-    ax.set_ylabel('Per-target' + _ert_label(baseline1_ds, baseline1_label))
-    ax.set_xlabel('Per-target' + _ert_label(baseline2_ds, baseline2_label))
+    ax.set_ylabel('Per-target ' + _evals_label(baseline1_ds, baseline1_label, str(groupby)))
+    ax.set_xlabel('Per-target ' + _evals_label(baseline2_ds, baseline2_label, str(groupby)))

@@ -124,12 +124,28 @@ class PortfolioDataSets:
         moves ahead.
         """
         (dim, funcId) = dimfun
+
         # What is the best reachable target?
         bestfinalfunval = max(np.median(self.bestalg(dimfun).bestfinalfunvals), 1e-8)
+
         # How fast do various algorithms reach it?
-        nametargetERT = [(name, ds.detERT([bestfinalfunval])) for (name, ds) in self.algds_dimfunc(dimfun)]
+        algs = list(self.algds_dimfunc(dimfun))
+        maxevals = np.max([ds.maxevals for (name, ds) in algs])
+        evals = np.array([ds.detEvals([bestfinalfunval]) for (name, ds) in algs])
+
+        # XXX: Gah, how to do this the numpy way?
+        nanmask = np.isnan(evals)
+        medevals = [maxevals]*len(algs)
+        for i in range(len(algs)):
+            algnanmask = ~np.isnan(evals)[i]
+            if np.any(algnanmask):
+                medevals[i] = np.median(evals[i, algnanmask])
+            else:
+                medevals[i] = maxevals
+        nametarget = [(algs[i][0], medevals[i]) for i in range(len(algs))]
+
         # Pick the fastest!
-        (name, targetERT) = min(nametargetERT, key = lambda k: k[1])
+        (name, target) = min(nametarget, key = lambda k: k[1])
         return self.algds[name].dictByDimFunc()[dim][funcId][0]
 
     def unifpf(self):
