@@ -207,7 +207,7 @@ def rank_by_budget(ax, pds, dim=None, funcId=None, groupby=None):
         i += 1
 
     ax.set_xlabel('Budget')
-    ax.set_ylabel('Rank by Function Value')
+    ax.set_ylabel('Rank by '+str(groupby).title()+' Function Value')
     ax.set_xscale('log', basex=pfsize)
     ax.grid()
 
