@@ -252,10 +252,14 @@ def ert_by_target(ax, pds, baseline_ds=None, baseline_label="", dim=None, funcId
             fevs /= baseline_fevs
         style['markevery'] = 64
         ax.loglog(targets, fevs, label=name, basey=pfsize, **style)
-    ax.grid()
     ax.set_xlim(10**2, 10**(np.log10(targets[-1])-0.2))
+    if baseline_ds:
+        ax.set_yticks([2, 3.5], minor=True)
     ax.set_xlabel('Function Value Targets')
     ax.set_ylabel(_ert_label(baseline_ds, baseline_label))
+    ax.grid()
+    if baseline_ds:
+        ax.yaxis.grid(True, which = 'minor')
 
 
 def ert_by_ert(ax, pds, baseline1_ds=None, baseline1_label="", baseline2_ds=None, baseline2_label="", dim=None, funcId=None):
