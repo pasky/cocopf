@@ -138,6 +138,11 @@ changes in time (IOW, budget):
 
 	cocopf/pptools/plot_conv.py bestmix.pickle.gz fval_by_budget 5  2 7 11
 
+Also, we can generate TeX-formatted tables that display averaged
+performance over various function classes:
+
+	cocopf/pptools/table_final.py bestmix7.pickle.gz slowdown2oracle 5 all deceptive all-deceptive
+
 More to come soon!
 
 The heavy lifting is all done by the ``pproc`` and ``pplot`` modules,
