@@ -44,7 +44,20 @@ for apath in algs:
 for spath in strats:
     print spath
     sname = os.path.basename(os.path.normpath(spath))
-    pds.add_strategy(sname, bb.load(glob.glob(spath+'/bbobexp_f*.info')))
+    snamemap = {
+            'mUNIF7': 'UNIF',
+            'mE50G7': 'EG',
+            'mPM0.025_0.1_7': 'PM',
+            'mAP0.075_0.5_0.1_7': 'AP',
+            'mT1_1A7': 'TA',
+            'mMMK14bs': 'MMK',
+            'mMM8_7': 'MML',
+            'mHUC4.0B7sr_0.95_50m': 'SR',
+            'mHUC2.0B7auc_0.75_50m': 'AUC',
+            'mUC8.0B7xr_log,adapt0.9': 'RUCB',
+            'mUC16.0B7x_log,adapt0.7': 'LUCB',
+        }
+    pds.add_strategy(snamemap[sname], bb.load(glob.glob(spath+'/bbobexp_f*.info')))
 
 # TODO: Make generating these optional?
 print "bestalg"

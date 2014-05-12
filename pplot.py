@@ -52,7 +52,7 @@ def _style_unifpf():
     return _style_thickline({ 'color': '#D0E4FF' })
 
 def _style_strategy(name, i):
-    if name.startswith('mUNIF'):
+    if name.startswith('UNIF'):
         return _style_thickline({ 'color': 'wheat' })
 
     styles = bb.genericsettings.line_styles
@@ -81,14 +81,15 @@ def _pds_plot_iterator(pds, dim, funcId):
         yield ('algorithm', algname, ds, _style_algorithm(algname, i))
         i += 1
     yield ('oracle', 'oracle', pds.oracle((dim, funcId)), _style_oracle())
-    yield ('unifpf', 'eUNIF', pds.unifpf().dictByDimFunc()[dim][funcId][0], _style_unifpf())
+    return
+    #yield ('unifpf', 'eUNIF', pds.unifpf().dictByDimFunc()[dim][funcId][0], _style_unifpf())
     i = 0
     for (stratname, ds) in pds.stratds_dimfunc((dim, funcId)):
         yield ('strategy', stratname, ds, _style_strategy(stratname, i))
         i += 1
 
 
-def legend(obj, ncol=3, **kwargs):
+def legend(obj, ncol=1, **kwargs):
     """
     Show a legend.  obj can be an Axes or Figure (in that case, also pass
     handles and labels arguments).
@@ -111,7 +112,7 @@ def _fval_label(baseline_ds, baseline_label, groupby):
         else:
             return groupby+' Function Values (Rel. Regression)'
     else:
-        return groupby+' Best Function Values'
+        return groupby+' Function Values'
 
 def fval_by_budget(ax, pds, baseline_ds=None, baseline_label="", dim=None, funcId=None, groupby=None):
     """

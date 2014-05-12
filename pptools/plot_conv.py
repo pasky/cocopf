@@ -144,7 +144,8 @@ if __name__ == "__main__":
         for fid in sys.argv[4:]:
             print 'figure', plottype, dim, fid
             fig = fig_by_type(pds, plottype, dim, fid)
-            fig.set_size_inches((11.692, 8.267)) # A4 landscape
+            #fig.set_size_inches((11.692, 8.267)) # A4 landscape
+            fig.set_size_inches((4.7, 4)) # A4 landscape
             fig.set_tight_layout(True)
             pdf.savefig(fig)
         pdf.close()
