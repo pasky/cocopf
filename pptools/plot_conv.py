@@ -98,8 +98,8 @@ def fig_by_type(pds, plottype, dim, fid):
     fig = figure('%s (%s)'%(fid, plottype))
     ax = fig.add_subplot(111)
     plot_by_type(pds, ax, plottype, dim, fid)
-    fig.text(0.2, 0.2, 'F'+fid, horizontalalignment='center', verticalalignment='center', transform=ax.transAxes)
-    cplot.legend(ax)
+    fig.text(0.9, 0.2, 'F'+fid, horizontalalignment='center', verticalalignment='center', transform=ax.transAxes)
+    cplot.legend(ax, loc='lower left')
     return fig
 
 
