@@ -28,7 +28,7 @@ if __name__ == "__main__":
     (filepath, filename) = os.path.split(sys.argv[0])
     sys.path.append(os.path.join(filepath, os.path.pardir, os.path.pardir))
 
-from cocopf.pproc import PortfolioDataSets
+from cocopf.pproc import PortfolioDataSets, resolve_fid
 import cocopf.pplot as cplot
 
 
@@ -39,54 +39,6 @@ def get_stratds(pds, strat, dim, fid):
         return pds.bestalg((dim, fid))
     else:
         return pds.stratds[strat].dictByDimFunc()[dim][fid][0]
-
-
-def resolve_fid(fid):
-    # A list of numbers?
-    if fid.count(',') > 0:
-        return [int(i) for i in fid.split(',')]
-
-    # A number?
-    try:
-        return int(fid)
-    except ValueError:
-        pass
-
-    # A symbolic name!
-
-    symbols = dict(
-        all=set(range(1,25)),
-
-        # functions that converge earlier than 7^3
-        q=set([1,2,5]),
-
-        # functions that have a single sharply optimal oracle
-        single=set([2,3,4,6,7,10,11,12,13,15,16,17,18,19,20,21,22,23]),
-        # functions that have multiple feasible candidates (#evals@optimal slowdown <2)
-        many=set([1,5,8,9,14,24]),
-
-        # functions whose optimal oracle did not dominate throughout the computation (i.e. was not best two powers of |pf| ago)
-        deceptive=set([6,8,9,10,11,12,14,15,19,20,21,22,23,24]),
-
-        # functions whose oracle converges steadily
-        steady=set([6,12,17,18,19,24]),
-        # functions whose oracle converges unexpectedly
-        sudden=set([1,2,3,4,5,7,8,9,10,11,13,14,15,16,20,21,22,23]),
-    )
-
-    fidset = set([])
-    for m in re.finditer(r'([+:-])?([^+:-]+)', fid):
-        if m.group(1) is None:
-            fidset = symbols[m.group(2)]
-        elif m.group(1) == '+':
-            fidset |= symbols[m.group(2)]
-        elif m.group(1) == ':':
-            fidset &= symbols[m.group(2)]
-        elif m.group(1) == '-':
-            fidset -= symbols[m.group(2)]
-        else:
-            raise ValueError('bad fid syntax ' + fid)
-    return list(fidset)
 
 
 def plot_by_type(pds, ax, plottype, dim, fid):

@@ -25,6 +25,7 @@ estimates of unobserved ERTs.
 import itertools
 import numpy as np
 import pickle, gzip
+import re
 import scipy.stats as ss
 import sys
 
@@ -249,3 +250,71 @@ class PortfolioDataSets:
         ranks = ss.mstats.rankdata(values, axis=1)
 
         return np.transpose(np.vstack([budgets, ranks.T]))
+
+
+def resolve_fid(fid):
+    """
+    Convert a given "function id" string to a number of list of numbers,
+    with the ability to resolve symbolic names for a variety of function
+    classes.
+
+    XXX: So far, the classes are fixed as determined on the scipy+CMA
+    portfolio. Instead, determine them dynamically.
+    """
+    # A list of numbers?
+    if fid.count(',') > 0:
+        return [int(i) for i in fid.split(',')]
+
+    # A number?
+    try:
+        return int(fid)
+    except ValueError:
+        pass
+
+    # A symbolic name!
+
+    symbols = dict(
+        all=set(range(1,25)),
+
+        # functions that converge earlier than 7^3
+        q=set([1,2,5]),
+
+        # functions that have a single sharply optimal oracle
+        single=set([2,3,4,6,7,10,11,12,13,15,16,17,18,19,20,21,22,23]),
+        # functions that have multiple feasible candidates (#evals@optimal slowdown <2)
+        many=set([1,5,8,9,14,24]),
+
+        # functions whose optimal oracle did not dominate throughout the computation (i.e. was not best two powers of |pf| ago)
+        deceptive=set([6,8,9,10,11,12,13,14,15,19,20,21,22,23,24]),
+
+        # functions whose oracle converges steadily
+        steady=set([6,12,17,18,19,24]),
+        # functions whose oracle converges unexpectedly
+        sudden=set([1,2,3,4,5,7,8,9,10,11,13,14,15,16,20,21,22,23]),
+
+        # functions where CMA (the by far best-performing pf member) converges
+        CMAgood=set([6,7,10,11,12,13,16,17,18,21,22,23]),
+        # functions where CMA (the by far best-performing pf member) does not converge
+        CMAbad=set([1,2,3,4,5,8,9,14,15,19,20,24]),
+
+        # original BBOB families
+        separ=set(range(1,6)),
+        lcond=set(range(6,10)),
+        hcond=set(range(10,15)),
+        multi=set(range(15,20)),
+        mult2=set(range(20,25)),
+    )
+
+    fidset = set([])
+    for m in re.finditer(r'([+:-])?([^+:-]+)', fid):
+        if m.group(1) is None:
+            fidset = symbols[m.group(2)]
+        elif m.group(1) == '+':
+            fidset |= symbols[m.group(2)]
+        elif m.group(1) == ':':
+            fidset &= symbols[m.group(2)]
+        elif m.group(1) == '-':
+            fidset -= symbols[m.group(2)]
+        else:
+            raise ValueError('bad fid syntax ' + fid)
+    return list(fidset)
