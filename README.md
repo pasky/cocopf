@@ -5,6 +5,11 @@ COCOpf: An Algorithm Portfolio COCO/BBOB Platform
 hyperheuristics maintaining portfolios of optimization algorithms within
 the excellent [COCO benchmarking framework for BBOB workshops](http://coco.gforge.inria.fr/doku.php).
 
+Algorithm portfolios represent an approach where multiple heuristic
+optimization algorithms, each most suitable for a different class of
+problems, are combined together in a single general solver that can
+choose the best algorithm to run for each problem instance on the input.
+
 Using **COCOpf**, you can immediately start experimenting with ways to
 combine multiple heuristic black-box optimization algorithms to achieve
 the best combined performance on the COCO/BBOB benchmark function set.
