@@ -43,10 +43,10 @@ def _style_thickline(xstyle):
 
 def _style_algorithm(name, i):
     # Automatic colors are fine, no markers used
-    return { 'linestyle': 'dashed' }
+    return { 'linestyle': 'solid', 'color': 'black' }
 
 def _style_oracle():
-    return _style_thickline({ 'color': '#DAFFE4' })
+    return _style_thickline({ 'color': '#888888' })
 
 def _style_unifpf():
     return _style_thickline({ 'color': '#D0E4FF' })
@@ -89,7 +89,7 @@ def _pds_plot_iterator(pds, dim, funcId):
         i += 1
 
 
-def legend(obj, ncol=1, **kwargs):
+def legend(obj, ncol=1, handles=None, labels=None, **kwargs):
     """
     Show a legend.  obj can be an Axes or Figure (in that case, also pass
     handles and labels arguments).
@@ -100,7 +100,10 @@ def legend(obj, ncol=1, **kwargs):
     # specification did not take effect on whole-figure legends (and for
     # actual text, 6 is a wee bit small).  We get a specific cramped
     # appearance and correct behavior for whole-figure legends this way.
-    l = obj.legend(ncol=ncol, fancybox=True, markerscale=0.66, fontsize=6, **kwargs)
+    if handles is not None:
+        l = obj.legend(handles, labels, ncol=ncol, fancybox=True, markerscale=0.66, fontsize=6, **kwargs)
+    else:
+        l = obj.legend(ncol=ncol, fancybox=True, markerscale=0.66, fontsize=6, **kwargs)
     plt.setp(l.get_texts(), fontsize='small')
 
 
@@ -157,7 +160,7 @@ def fval_by_budget(ax, pds, baseline_ds=None, baseline_label="", dim=None, funcI
             funvals = fvba[:, 1] / fvba[:, 2]
 
         style['markevery'] = 16
-        ax.loglog(budgets, funvals, label=name, basex=pfsize, **style)
+        ax.loglog(budgets, funvals, label='Algorithm' if name != 'oracle' else 'Oracle', basex=pfsize, **style)
     if baseline_ds:
         ax.set_yticks([1], minor=True)
     ax.set_xlabel('Budget')

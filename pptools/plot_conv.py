@@ -99,7 +99,8 @@ def fig_by_type(pds, plottype, dim, fid):
     ax = fig.add_subplot(111)
     plot_by_type(pds, ax, plottype, dim, fid)
     fig.text(0.9, 0.2, 'F'+fid, horizontalalignment='center', verticalalignment='center', transform=ax.transAxes)
-    cplot.legend(ax, loc='lower left')
+    (handles, labels) = ax.get_legend_handles_labels()
+    cplot.legend(ax, handles=handles[-2::], labels=labels[-2::], loc='lower left')
     return fig
 
 
