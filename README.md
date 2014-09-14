@@ -146,7 +146,7 @@ changes in time (IOW, budget):
 Also, we can generate TeX-formatted tables that display averaged
 performance over various function classes:
 
-	cocopf/pptools/table_final.py bestmix7.pickle.gz slowdown2oracle 5 all deceptive all-deceptive
+	cocopf/pptools/table_final.py bestmix7.pickle.gz slowdown2oracle 5 all volatile all-volatile
 
 More to come soon!
 

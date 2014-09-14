@@ -285,7 +285,7 @@ def resolve_fid(fid):
         many=set([1,5,8,9,14,24]),
 
         # functions whose optimal oracle did not dominate throughout the computation (i.e. was not best two powers of |pf| ago)
-        deceptive=set([6,8,9,10,11,12,13,14,15,19,20,21,22,23,24]),
+        volatile=set([6,8,9,10,11,12,13,14,15,19,20,21,22,23,24]),
 
         # functions whose oracle converges steadily
         steady=set([6,12,17,18,19,24]),
