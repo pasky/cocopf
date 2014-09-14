@@ -8,7 +8,9 @@ of the algorithms and strategies on a given set of functions.
 Usage: table_final.py PICKLEFILE VALTYPE DIM FID...
 
 VALTYPE can be 'rank' (average rank) and 'slowdown2<something>'
-(average log-slowdown compared to <something>).
+(average log-slowdown compared to <something>).  VALTYPE can
+end with trailing @ to determine that std, median should be also
+printed out.
 """
 
 import os
@@ -46,7 +48,7 @@ def _pds_table_iterator(pds, dim, funcId):
         i += 1
 
 
-def val_slowdown(pds, baseline_name, dim=None, funcId=None, groupby=None, showSD=False):
+def val_slowdown(pds, baseline_name, dim=None, funcId=None, groupby=None):
     if groupby is None: groupby = np.median
     pfsize = len(pds.algds.keys())
 
@@ -76,10 +78,8 @@ def val_slowdown(pds, baseline_name, dim=None, funcId=None, groupby=None, showSD
         print str(i), str(avals[i])
         if avals[i] == []:
             avals[i] = np.inf
-        elif showSD:
-            avals[i] = np.std(avals[i])
         else:
-            avals[i] = np.average(avals[i])
+            avals[i] = (np.average(avals[i]), np.std(avals[i]), np.median(avals[i]))
         print '>', str(avals[i])
     return avals
 
@@ -107,17 +107,12 @@ def val_rank(pds, dim=None, funcId=None, groupby=None):
     ranks = []
     i = 0
     for (kind, name, ds) in _pds_table_iterator(pds, dim, fakeFuncId):
-        ranks.append(ranking[-1,1+i])
+        ranks.append(tuple(ranking[-1,1+i]))
         i += 1
     return ranks
 
 
 def val_by_type(pds, valtype, dim, fid):
-    if fid.endswith('@'):
-        fid = fid[0:-1]
-        showSD = True
-    else:
-        showSD = False
     fid = resolve_fid(fid)
 
     if valtype == "rank":
@@ -127,7 +122,7 @@ def val_by_type(pds, valtype, dim, fid):
         m = re.match("slowdown2(.*)", valtype)
         if m:
             strat = m.group(1)
-            return val_slowdown(pds, baseline_name=strat, dim=dim, funcId=fid, showSD=showSD)
+            return val_slowdown(pds, baseline_name=strat, dim=dim, funcId=fid)
         raise ValueError('valtype ' + valtype)
 
     raise ValueError('valtype ' + valtype)
@@ -138,6 +133,12 @@ if __name__ == "__main__":
     valtype = sys.argv[2]
     dim = int(sys.argv[3])
 
+    if valtype.endswith('@'):
+        valtype = valtype[0:-1]
+        showStat = True
+    else:
+        showStat = False
+
     pds = PortfolioDataSets(pickleFile=picklefile)
 
     names = [name for (kind, name, ds) in _pds_table_iterator(pds, dim, 1)]
@@ -147,10 +148,13 @@ if __name__ == "__main__":
     print values
 
     def printval(v):
-        if v == '\\infty':
-            return v
+        if v[0] == '\\infty':
+            return v[0]
+        elif showStat:
+            # avg std median
+            return '$%.1f^{\pm %.1f}_{|\, %.1f}$' % (v[0], v[1], v[2])
         else:
-            return '%.1f' % v
+            return '%.1f' % v[0]
 
     print ' & '.join(['Solver'] + sys.argv[4:]) + ' \\\\'
     for i in range(len(names)):
