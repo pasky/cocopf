@@ -29,10 +29,6 @@ All in all, these minimization method names are recognized:
 """
 
 import os
-import string
-import sys
-import time
-import warnings
 
 import numpy as np
 import scipy.optimize as so
@@ -136,27 +132,27 @@ class MinimizeMethod(object):
                     return None
 
         self.outer_loop = CMAWrapper(self.fi.f.ftarget,
-                self.fi.maxfunevals - self.fi.f.evaluations)
+                                     self.fi.maxfunevals - self.fi.f.evaluations)
 
     def _setup_scipy(self, name):
         if name.lower() in ['anneal', 'cobyla']:
             raise RuntimeError('MinimizationMethod does not support SciPy method %s (does not provide callback functionality).' % name)
 
         self.minimizer_kwargs = dict(
-                method = name,
+                method=name,
                 # Bounded local optimizers
-                bounds = [(-6., +6.) for d in range(self.fi.dim)],
+                bounds=[(-6., +6.) for d in range(self.fi.dim)],
                 # COBYLA
-                constraints = ({ "type": "ineq", "fun": lambda x: np.min(x+5) },
-                               { "type": "ineq", "fun": lambda x: np.min(-(x-5)) }),
+                constraints=({"type": "ineq", "fun": lambda x: np.min(x+5)},
+                             {"type": "ineq", "fun": lambda x: np.min(-(x-5))}),
                 # Specific options
-                options = dict(
+                options=dict(
                     # COBYLA
-                    rhoend = self.fi.f.precision,
+                    rhoend=self.fi.f.precision,
                 ),
             )
 
-    def __call__(self, fun, x0, inner_cb = None, outer_cb = None):
+    def __call__(self, fun, x0, inner_cb=None, outer_cb=None):
         """
         A callable interface.  Call on ``fun`` objective function with
         initial solution ``x0``.  ``inner_cb`` has the semantics of
@@ -166,8 +162,8 @@ class MinimizeMethod(object):
         optimization); ``inner_cb`` is the stepping functionality stopping
         point.
         """
-        return self.outer_loop(fun, x0, callback = outer_cb,
-                minimizer_kwargs = dict(callback = inner_cb, **self.minimizer_kwargs))
+        return self.outer_loop(fun, x0, callback=outer_cb,
+                minimizer_kwargs=dict(callback=inner_cb, **self.minimizer_kwargs))
 
 
 class SteppingData:
@@ -187,7 +183,7 @@ class SteppingData:
             self.f._readytostart()
 
         self.datafile = open(os.path.splitext(self.f.datafile)[0] + '.mdat', 'a')
-        self.datafile.write("% function evaluation | portfolio iteration | instance index | instance method | instance invocations | instance best noise-free fitness - Fopt | best noise-free fitness - Fopt\n") # | x1 | x2...
+        self.datafile.write("% function evaluation | portfolio iteration | instance index | instance method | instance invocations | instance best noise-free fitness - Fopt | best noise-free fitness - Fopt\n")  # | x1 | x2...
 
     def end_iter(self):
         self.total_iters += 1
@@ -204,10 +200,10 @@ class SteppingData:
 
         # This information is not really useful and taking it out reduces
         # the uncompressed .mdat file size to 1/5.
-        #tmp = []
-        #for x in point:
-        #    tmp.append(' %+5.4e' % x)
-        #res += ''.join(tmp)
+        # tmp = []
+        # for x in point:
+        #     tmp.append(' %+5.4e' % x)
+        # res += ''.join(tmp)
 
         self.datafile.write(res + '\n')
         self.datafile.flush()
