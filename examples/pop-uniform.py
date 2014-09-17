@@ -55,7 +55,7 @@ class XMinimizeMethod(MinimizeMethod):
                     innercb = InnerCMACallback(cb) if cb is not None else None
 
                     try:
-                        return cma.fmin(fun, x0, 10./4., bounds = [-5., 5.],
+                        return cma.fmin(fun, x0, 10./4.,
                                 ftarget = self.ftarget, maxfevals = self.maxfevals,
                                 termination_callback = innercb, verb_disp = 0)
                     except cma._Error, e:
