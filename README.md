@@ -26,8 +26,8 @@ the best combined performance on the COCO/BBOB benchmark function set.
   * The pre-made ``MinimizeMethod`` interface gives you instant access to
     seven minimization algorithms that are part of *scipy.optimize*
     (wrapped in the basinhopping global optimization algorithm),
-    plus there is an example incorporating *CMA-ES*, allowing you to
-    focus just on your hyperheuristics.
+    and to the state-of-art CMA-ES population-based minimization method.
+    You can easily add more custom minimization methods using subclassing.
 
   * As a unique feature, **COCOpf** allows you to single-step
     the minimization algorithms iteration by iteration (via the

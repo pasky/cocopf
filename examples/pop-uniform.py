@@ -15,6 +15,8 @@
 #
 # In addition, this demo extends MinimizeMethod with CMA support.
 # Use `pip install cma` to get it. (Last tested with CMA-1.1.02.)
+# Actually, stock MinimizeMethod class also supports CMA now, but
+# we leave this code around as an example of its subclassing.
 #
 # Example: pop-uniform.py Powell,BFGS,SLSQP,CMA 4
 

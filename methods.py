@@ -2,17 +2,30 @@
 # -*- coding: utf-8 -*-
 
 """
-A method wrapper that will normally wrap SciPy minimizers accessed
-via so.basinhopping and so.minimize, but is designed to allow
-overloading by other user-provided minimizers.
+A minimization method (optimization algorithm) interface that allows
+per-iteration stepped access to various optimizers, referred to by
+their name as a string.
 
-As of SciPy 0.13.3, you can use these SciPy methods with MinimizeMethod:
+By default, this wraps around the SciPy optimizers and the reference
+CMA-ES Python implementation by N. Hansen (if you installed it).  In the
+future, we will probably add even more optimizers.  However, if you want
+to add some optimizers locally, this class is designed to be subclassed
+for precisely that purpose.
 
-    Nelder-Mead, Powell, CG, BFGS, L-BFGS-B, TNC, SLSQP
+All in all, these minimization method names are recognized:
 
-The remaining SciPy minimizers are not supported since they are not
-black-box but require at least function derivations.  COBYLA is not
-supported as it (yet?) does not implement a callback functionality.
+    * CMA: The CMA algorithm.  `pip install cma` to get the module,
+      otherwise you will get an exception when you try to use it.
+
+    * Nelder-Mead, Powell, CG, BFGS, L-BFGS-B, TNC, SLSQP (as of SciPy 0.13.3;
+      as other minimizers appear in SciPy, they will work automatically).
+      These are local searches; the so.minimize call is wrapped in
+      so.basinhopping which provides an intelligent restart strategy.
+
+      Note that some SciPy minimizers (not listed above) are not supported
+      since they are not black-box but require at least function derivations.
+      COBYLA is not supported as it (yet?) does not implement a callback
+      functionality.
 """
 
 import os
@@ -74,18 +87,7 @@ class MinimizeMethod(object):
         self.fi = fi
 
         self.outer_loop = so.basinhopping
-        self.minimizer_kwargs = dict(
-                # Bounded local optimizers
-                bounds = [(-6., +6.) for d in range(fi.dim)],
-                # COBYLA
-                constraints = ({ "type": "ineq", "fun": lambda x: np.min(x+5) },
-                               { "type": "ineq", "fun": lambda x: np.min(-(x-5)) }),
-                # Specific options
-                options = dict(
-                    # COBYLA
-                    rhoend = fi.f.precision,
-                ),
-            )
+        self.minimizer_kwargs = dict()
 
         self._setup_method(name)
 
@@ -99,10 +101,60 @@ class MinimizeMethod(object):
         try to parse the name for custom values and (recommended) call the
         super()._setup_method() as a callback.
         """
-        if name.lower() in ['anneal', 'cobyla']:
-            raise RuntimeError('MinimizationMethod does not support method %s (does not provide callback functionality).' % name)
+        if name.upper() in ['CMA']:
+            self._setup_cma(name)
         else:
-            self.minimizer_kwargs['method'] = name
+            # General fallback, open ended method naming
+            self._setup_scipy(name)
+
+    def _setup_cma(self, name):
+        import cma
+
+        class CMAWrapper:
+            def __init__(self, ftarget, maxfevals):
+                self.ftarget = ftarget
+                self.maxfevals = maxfevals
+
+            def __call__(self, fun, x0, callback, minimizer_kwargs):
+                class InnerCMACallback:
+                    def __init__(self, realcb):
+                        self.realcb = realcb
+
+                    def __call__(self, cma):
+                        self.realcb(cma.best.x)
+
+                cb = minimizer_kwargs['callback']
+                innercb = InnerCMACallback(cb) if cb is not None else None
+
+                try:
+                    return cma.fmin(fun, x0, 10./4.,
+                                    options={'ftarget': self.ftarget, 'maxfevals': self.maxfevals,
+                                             'termination_callback': innercb, 'verb_disp': 0,
+                                             'verb_filenameprefix': '/tmp/outcmaes'})
+                except cma._Error, e:
+                    print "CMA error: " + str(e)
+                    return None
+
+        self.outer_loop = CMAWrapper(self.fi.f.ftarget,
+                self.fi.maxfunevals - self.fi.f.evaluations)
+
+    def _setup_scipy(self, name):
+        if name.lower() in ['anneal', 'cobyla']:
+            raise RuntimeError('MinimizationMethod does not support SciPy method %s (does not provide callback functionality).' % name)
+
+        self.minimizer_kwargs = dict(
+                method = name,
+                # Bounded local optimizers
+                bounds = [(-6., +6.) for d in range(self.fi.dim)],
+                # COBYLA
+                constraints = ({ "type": "ineq", "fun": lambda x: np.min(x+5) },
+                               { "type": "ineq", "fun": lambda x: np.min(-(x-5)) }),
+                # Specific options
+                options = dict(
+                    # COBYLA
+                    rhoend = self.fi.f.precision,
+                ),
+            )
 
     def __call__(self, fun, x0, inner_cb = None, outer_cb = None):
         """
