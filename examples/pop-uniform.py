@@ -14,9 +14,7 @@
 # Usage: pop-uniform.py METHOD [K] [MAXFEV]
 #
 # In addition, this demo extends MinimizeMethod with CMA support.
-# Get the reference CMA Python implementation from:
-#   https://www.lri.fr/~hansen/cmaes_inmatlab.html#python
-#   (that is, https://www.lri.fr/~hansen/cma.py)
+# Use `pip install cma` to get it. (Last tested with CMA-1.1.02.)
 #
 # Example: pop-uniform.py Powell,BFGS,SLSQP,CMA 4
 
@@ -41,6 +39,14 @@ class XMinimizeMethod(MinimizeMethod):
     def _setup_method(self, name):
         if name == "CMA":
             class CMAWrapper:
+                """
+                Wrap the reference CMA-ES Python implementation.
+
+                N.B. the wrapper ignores the x0 parameter and instead
+                lets the CMA implementation re-sample it again; this
+                is for benefit of the restart strategies which won't
+                start with the same point repeatedly.
+                """
                 def __init__(self, ftarget, maxfevals):
                     self.ftarget = ftarget
                     self.maxfevals = maxfevals
@@ -56,8 +62,9 @@ class XMinimizeMethod(MinimizeMethod):
 
                     try:
                         return cma.fmin(fun, x0, 10./4.,
-                                ftarget = self.ftarget, maxfevals = self.maxfevals,
-                                termination_callback = innercb, verb_disp = 0)
+                                        options={'ftarget': self.ftarget, 'maxfevals': self.maxfevals,
+                                                 'termination_callback': innercb, 'verb_disp': 0,
+                                                 'verb_filenameprefix': '/tmp/outcmaes'})
                     except cma._Error, e:
                         print "CMA error: " + str(e)
                         return None
