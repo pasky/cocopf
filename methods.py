@@ -141,7 +141,7 @@ class MinimizeMethod(object):
         self.minimizer_kwargs = dict(
                 options={'ftarget': self.fi.f.ftarget,
                          'maxfevals': self.fi.maxfunevals - self.fi.f.evaluations,
-                         'verb_disp': 100, 'verb_filenameprefix': '/tmp/outcmaes'}
+                         'verb_disp': 0, 'verb_filenameprefix': '/tmp/outcmaes'}
             )
 
         # Possibly set up a restart strategy
