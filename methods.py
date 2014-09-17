@@ -14,8 +14,15 @@ for precisely that purpose.
 
 All in all, these minimization method names are recognized:
 
-    * CMA: The CMA algorithm.  `pip install cma` to get the module,
-      otherwise you will get an exception when you try to use it.
+    * CMA, IPOP-CMA, BIPOP-CMA: The CMA algorithm.  IPOP and BIPOP are
+      some specific restart strategies that enhance performance; especially
+      BIPOP will make CMA quite universally great across the BBOB benchmark.
+
+      `pip install cma` to get the module, otherwise you will get an
+      exception when you try to use it.  For BIPOP, you will need either
+      some very new cma version or on your own apply our patch from
+
+            http://pasky.or.cz/dev/scipy/cma-1.1.02-bipop.patch
 
     * Nelder-Mead, Powell, CG, BFGS, L-BFGS-B, TNC, SLSQP (as of SciPy 0.13.3;
       as other minimizers appear in SciPy, they will work automatically).
@@ -97,7 +104,7 @@ class MinimizeMethod(object):
         try to parse the name for custom values and (recommended) call the
         super()._setup_method() as a callback.
         """
-        if name.upper() in ['CMA']:
+        if name.upper() in ['CMA', 'IPOP-CMA', 'BIPOP-CMA']:
             self._setup_cma(name)
         else:
             # General fallback, open ended method naming
@@ -117,6 +124,12 @@ class MinimizeMethod(object):
             cb = minimizer_kwargs.pop('callback')
             minimizer_kwargs['options']['termination_callback'] = InnerCMACallback(cb) if cb is not None else None
 
+            if 'restarts' in minimizer_kwargs:
+                # We ignore passed x0 in case a restart strategy is employed
+                # as it is important to start at a different point in each restart
+                # (esp. in the smallpop stages of BIPOP, obviously).
+                x0 = '10. * np.random.rand(%d) - 5' % minimizer_kwargs.pop('dim')
+
             try:
                 return cma.fmin(fun, x0, 10./4., **minimizer_kwargs)
             except cma._Error, e:
@@ -128,8 +141,18 @@ class MinimizeMethod(object):
         self.minimizer_kwargs = dict(
                 options={'ftarget': self.fi.f.ftarget,
                          'maxfevals': self.fi.maxfunevals - self.fi.f.evaluations,
-                         'verb_disp': 0, 'verb_filenameprefix': '/tmp/outcmaes'}
+                         'verb_disp': 100, 'verb_filenameprefix': '/tmp/outcmaes'}
             )
+
+        # Possibly set up a restart strategy
+        if name.upper() == 'IPOP-CMA':
+            self.minimizer_kwargs['restarts'] = 9
+        elif name.upper() == 'BIPOP-CMA':
+            self.minimizer_kwargs['restarts'] = 9
+            self.minimizer_kwargs['bipop'] = True
+
+        if 'restarts' in self.minimizer_kwargs:
+            self.minimizer_kwargs['dim'] = self.fi.dim
 
     def _setup_scipy(self, name):
         if name.lower() in ['anneal', 'cobyla']:
@@ -158,6 +181,9 @@ class MinimizeMethod(object):
         ever get called if the method is non-restarting (e.g. CMA global
         optimization); ``inner_cb`` is the stepping functionality stopping
         point.
+
+        Note that some minimization methods (e.g. *IPOP-CMA) may currently
+        ignore the passed ``x0`` value.
         """
         return self.outer_loop(fun, x0, callback=outer_cb,
                 minimizer_kwargs=dict(callback=inner_cb, **self.minimizer_kwargs))
