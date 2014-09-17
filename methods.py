@@ -107,9 +107,8 @@ class MinimizeMethod(object):
         import cma
 
         class CMAWrapper:
-            def __init__(self, ftarget, maxfevals):
-                self.ftarget = ftarget
-                self.maxfevals = maxfevals
+            def __init__(self):
+                pass
 
             def __call__(self, fun, x0, callback, minimizer_kwargs):
                 class InnerCMACallback:
@@ -119,20 +118,22 @@ class MinimizeMethod(object):
                     def __call__(self, cma):
                         self.realcb(cma.best.x)
 
-                cb = minimizer_kwargs['callback']
-                innercb = InnerCMACallback(cb) if cb is not None else None
+                cb = minimizer_kwargs.pop('callback')
+                minimizer_kwargs['options']['termination_callback'] = InnerCMACallback(cb) if cb is not None else None
 
                 try:
-                    return cma.fmin(fun, x0, 10./4.,
-                                    options={'ftarget': self.ftarget, 'maxfevals': self.maxfevals,
-                                             'termination_callback': innercb, 'verb_disp': 0,
-                                             'verb_filenameprefix': '/tmp/outcmaes'})
+                    return cma.fmin(fun, x0, 10./4., **minimizer_kwargs)
                 except cma._Error, e:
                     print "CMA error: " + str(e)
                     return None
 
-        self.outer_loop = CMAWrapper(self.fi.f.ftarget,
-                                     self.fi.maxfunevals - self.fi.f.evaluations)
+        self.minimizer_kwargs = dict(
+                options={'ftarget': self.fi.f.ftarget,
+                         'maxfevals': self.fi.maxfunevals - self.fi.f.evaluations,
+                         'verb_disp': 0, 'verb_filenameprefix': '/tmp/outcmaes'}
+            )
+
+        self.outer_loop = CMAWrapper()
 
     def _setup_scipy(self, name):
         if name.lower() in ['anneal', 'cobyla']:
