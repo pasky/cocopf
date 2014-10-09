@@ -71,8 +71,11 @@ class Experiment:
         each n-th function, offset by m. This is useful for speedup by
         parallelized benchmarking, e.g.:
             parallel -u --gnu env BBOB_FUNSTRIPES={1}%6 ./pop-egreedy.py ::: 0 1 2 3 4 5
-        (Parallelizing by instances would be more useful, but impossible
-        due to data file conflicts.)
+
+        Analogously, the environment variable $BBOB_INSTRIPES can be used
+        to parallelize evaluation of instances.  The recommended way to
+        run experiments is combining both:
+            parallel -u --gnu env BBOB_FUNSTRIPES={1}%6 BBOB_INSTRIPES={2}%5 ./pop-ucb1.py Nelder-Mead,Powell,BFGS,L-BFGS-B,CG,SLSQP,CMA,BIPOP-CMA 8 100000 16.0 yz log,adapt0.7 ::: `seq 0 5` ::: `seq 0 4`
         """
         self.maxfev = maxfev
         strmaxfev = '1e%d' % int(math.log10(maxfev))
@@ -80,24 +83,33 @@ class Experiment:
 
         if bool(os.environ.get('BBOB_FULLDIM')):
             self.dimensions = (2, 3, 5, 10, 20, 40) # Full settings
-	    fulldim = 'f'
+            fulldim = 'f'
         else:
             self.dimensions = (2, 5, 20) # Just bootstrap + BBOBmany ECRF
-	    fulldim = ''
-        self.function_ids = bbobbenchmarks.nfreeIDs
-        self.instances = range(1, 6) + range(31, 41)
+            fulldim = ''
+        dirsuffix = ''
 
+        self.function_ids = bbobbenchmarks.nfreeIDs
         funstripes = os.environ.get('BBOB_FUNSTRIPES')
         if funstripes is not None:
             (ofs, tot) = [int(i) for i in funstripes.split('%')]
             self.function_ids = [i for i in self.function_ids if (i-ofs)%tot == 0]
 
+        self.instances = range(1, 6) + range(31, 41)
+        instripes = os.environ.get('BBOB_INSTRIPES')
+        if instripes is not None:
+            (ofs, tot) = [int(i) for i in instripes.split('%')]
+            self.instances = [i for j,i in enumerate(self.instances) if (j-ofs)%tot == 0]
+            dirsuffix = '/' + instripes
+            print(self.instances)
+
         self.t0 = time.time()
         np.random.seed(int(self.t0))
 
         comments += ', FEV=%s*dim' % maxfev
-        self.f = fgeneric.LoggingFunction(datapath = 'data-%s%s/%s'%(strmaxfev,fulldim,shortname),
-                algid = shortname, comments = comments)
+        self.f = fgeneric.LoggingFunction(
+                datapath='data-%s%s/%s%s' % (strmaxfev, fulldim, shortname, dirsuffix),
+                algid=shortname, comments=comments)
 
     def finstances(self):
         """
