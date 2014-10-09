@@ -44,7 +44,7 @@ for apath in algs:
 for spath in strats:
     print spath
     sname = os.path.basename(os.path.normpath(spath))
-    pds.add_strategy(sname, bb.load(glob.glob(spath+'/bbobexp_f*.info')))
+    pds.add_strategy(sname, bb.load(glob.glob(spath+'/bbobexp_f*.info') + glob.glob(spath+'/*/bbobexp_f*.info')))
 
 # TODO: Make generating these optional?
 print "bestalg"
