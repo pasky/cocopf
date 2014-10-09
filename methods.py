@@ -20,9 +20,10 @@ All in all, these minimization method names are recognized:
 
       `pip install cma` to get the module, otherwise you will get an
       exception when you try to use it.  For BIPOP, you will need either
-      some very new cma version or on your own apply our patch from
+      some very new cma version or on your own apply our patches from
 
             http://pasky.or.cz/dev/scipy/cma-1.1.02-bipop.patch
+            http://pasky.or.cz/dev/scipy/cma-1.1.02-x0callable.patch
 
     * Nelder-Mead, Powell, CG, BFGS, L-BFGS-B, TNC, SLSQP (as of SciPy 0.13.3;
       as other minimizers appear in SciPy, they will work automatically).
@@ -111,34 +112,9 @@ class MinimizeMethod(object):
             self._setup_scipy(name)
 
     def _setup_cma(self, name):
-        import cma
+        from cocopf.method.cmarestart import CMAController
 
-        def cma_wrapper(fun, x0, callback, minimizer_kwargs):
-            class InnerCMACallback:
-                def __init__(self, realcb):
-                    self.realcb = realcb
-
-                def __call__(self, cma):
-                    self.realcb(cma.best.x)
-
-            cb = minimizer_kwargs.pop('callback')
-            minimizer_kwargs['options']['termination_callback'] = InnerCMACallback(cb) if cb is not None else None
-
-            if 'restarts' in minimizer_kwargs:
-                # We ignore passed x0 in case a restart strategy is employed
-                # as it is important to start at a different point in each restart
-                # (esp. in the smallpop stages of BIPOP, obviously).
-                x0 = '10. * np.random.rand(%d) - 5' % minimizer_kwargs.pop('dim')
-
-            try:
-                return cma.fmin(fun, x0, 10./4., **minimizer_kwargs)
-            except cma._Error, e:
-                print "CMA error: " + str(e)
-                return None
-
-        self.outer_loop = cma_wrapper
-
-        self.minimizer_kwargs = dict(
+        options = dict(
                 options={'ftarget': self.fi.f.ftarget,
                          'maxfevals': self.fi.maxfunevals - self.fi.f.evaluations,
                          'verb_disp': 0, 'verb_filenameprefix': '/tmp/outcmaes'}
@@ -146,13 +122,18 @@ class MinimizeMethod(object):
 
         # Possibly set up a restart strategy
         if name.upper() == 'IPOP-CMA':
-            self.minimizer_kwargs['restarts'] = 9
+            options['restarts'] = 9
         elif name.upper() == 'BIPOP-CMA':
-            self.minimizer_kwargs['restarts'] = 9
-            self.minimizer_kwargs['bipop'] = True
+            options['restarts'] = 9
+            options['bipop'] = True
 
-        if 'restarts' in self.minimizer_kwargs:
-            self.minimizer_kwargs['dim'] = self.fi.dim
+        self.minimizer_kwargs = dict(options={'fminargs': options})
+
+        # In order to have basinhopping *and* CMA restart strategies,
+        # we need to use a somewhat complex machinery - this is the
+        # entry point; deep deep inside (in a separate thread, too!)
+        # it ends up calling cma.fmin() with **minimizer_kwargs.
+        self.minimizer_kwargs['method'] = CMAController()
 
     def _setup_scipy(self, name):
         if name.lower() in ['anneal', 'cobyla']:
