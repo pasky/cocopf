@@ -89,8 +89,12 @@ class PopulationCredit(object):
             return CreditAccrualLatest()
         elif name == "average":
             return CreditAccrualAverage()
+        elif name == "best":
+            return CreditAccrualBest()
         m = re.match("adapt(.*)", name)
         if m: return CreditAccrualAdapt(float(m.group(1)))
+        m = re.match("bestlast(.*)", name)
+        if m: return CreditAccrualBestLast(int(m.group(1)))
         raise ValueError("Unknown credit accrual operator " + str(name))
 
     def add(self):
@@ -115,7 +119,7 @@ class PopulationCredit(object):
             if self.pop.iters[i] < self.iters[i] and self.reset_on_restart:
                 self.iters[i] = 0
             if self.iters[i] > 0:
-                self.credit[i] = self.accrual_method(self.credit[i], self.iters[i], new_credit[i])
+                self.credit[i] = self.accrual_method(i, self.credit[i], self.iters[i], new_credit[i])
             else:
                 self.credit[i] = new_credit[i]
             self.iters[i] += 1
@@ -154,7 +158,7 @@ class CreditAccrualLatest(object):
     """
     def __init__(self):
         pass
-    def __call__(self, credit_old, iters, credit_new):
+    def __call__(self, i, credit_old, iters, credit_new):
         return credit_new
 
 class CreditAccrualAverage(object):
@@ -164,8 +168,18 @@ class CreditAccrualAverage(object):
     """
     def __init__(self):
         pass
-    def __call__(self, credit_old, iters, credit_new):
+    def __call__(self, i, credit_old, iters, credit_new):
         return credit_old + (credit_new - credit_old) / iters
+
+class CreditAccrualBest(object):
+    """
+    A credit accrual method that just considers the best value ever
+    reached by this algorithm, ignoring any temporary setbacks.
+    """
+    def __init__(self):
+        pass
+    def __call__(self, i, credit_old, iters, credit_new):
+        return credit_old if credit_old < credit_new else credit_new
 
 class CreditAccrualAdapt(object):
     """
@@ -174,5 +188,20 @@ class CreditAccrualAdapt(object):
     """
     def __init__(self, alpha):
         self.alpha = alpha
-    def __call__(self, credit_old, iters, credit_new):
+    def __call__(self, i, credit_old, iters, credit_new):
         return credit_old + (credit_new - credit_old) * self.alpha
+
+class CreditAccrualBestLast(object):
+    """
+    A credit accrual method that considers the best value reached
+    by this algorithm over the last N iterations, ignoring any
+    temporary setbacks.
+    """
+    def __init__(self, N):
+        self.N = N
+        self.credithist = dict()
+    def __call__(self, i, credit_old, iters, credit_new):
+        if i not in self.credithist:
+            self.credithist[i] = [credit_old]
+        self.credithist[i].append(credit_new)
+        return min(self.credithist[i][-self.N:])
