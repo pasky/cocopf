@@ -3,8 +3,8 @@
 #
 # Create a population of K solutions and iteratively minimize each
 # (step-by-step) using METHOD, giving each solution the same number
-# of iterations.  A solution is replaced in case minimization hits
-# local optimum.  Stops when optimum is found or we reach the MAXFEV
+# of function evaluations.  A solution is replaced in case minimization
+# hits local optimum.  Stops when optimum is found or we reach the MAXFEV
 # number of function evaluations.
 #
 # A mix of methods is also supported, if METHOD is a comma-separated

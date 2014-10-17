@@ -29,13 +29,12 @@ the best combined performance on the COCO/BBOB benchmark function set.
     and to the state-of-art CMA-ES population-based minimization method.
     You can easily add more custom minimization methods using subclassing.
 
-  * As a unique feature, **COCOpf** allows you to single-step
-    the minimization algorithms iteration by iteration (via the
+  * As a unique feature, **COCOpf** allows you to step the minimization
+    algorithms by a fixed number of function evaluations (via the
     ``MinimizeStepping`` wrapper), allowing usage of a flexible suspend
     / resume schedule.  This requires no modification of the used
-    minimization algorithms as long as they can simply execute
-    a callback function after each iteration!  (I.e. you can do this
-    with the SciPy minimizers and CMA-ES, without code modifications.)
+    minimization algorithms!  (I.e. you can do this with the SciPy
+    minimizers and CMA-ES, without code modifications.)
 
   * A ready-made ``Population`` class for easy maintenance of a portfolio
     of multiple concurrently executed (algorithm, solution) pairs.
@@ -97,21 +96,9 @@ scenario.
 
 COCOpf's approach is different in three important aspects:
 
-  * During online selection, algorithms are switched between their
-    full iterations in COCOpf.  However, algorithm iterations are
-    not recorded in the COCO/BBOB dat files and back-testing using the
-    algportfolio approach therefore allows for algorithm switching
-    only between individual function evaluations (either after each
-    evaluation, or after every N iterations).
-
-    We argue that COCOpf's approach is more realistic in the online
-    selection setting as switching algorithms may not be appropriate
-    after an arbitrary function evaluation - algorithms may evaluate
-    the function a variable number of times, we may try to switch
-    from a genetic algorithm instance multiple times during a single
-    population evaluation, and by checking too often, we can incur
-    a significant computation overhead from the algorithm selection
-    itself.
+  * During online selection, algorithms are switched much more often
+    than when we record their state in the COCO/BBOB dat files, requiring
+    back-testing to make some hard tradeoff choices.
 
   * It makes it easier to implement own online algorithm selection
     strategies than modifying the code of algportfolio, which can be

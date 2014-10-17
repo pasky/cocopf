@@ -57,6 +57,7 @@ class Population:
         for retry in [0,1]: # retry once if StopIteration
             try:
                 # Step by a single iteration of the minimizer
+                # (i.e. perform N function evaluations)
                 self.points[i] = self.minimizers[i].next()
                 x = self.points[i]
                 break

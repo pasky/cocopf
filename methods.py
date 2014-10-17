@@ -3,8 +3,15 @@
 
 """
 A minimization method (optimization algorithm) interface that allows
-per-iteration stepped access to various optimizers, referred to by
-their name as a string.
+stepped access to various optimizers, referred to by their name as
+a string.
+
+The stepping can be in principle implemented in various ways - for example
+running a single iteration of the algorithm (where iteration can be something
+very simple e.g. in case of Nelder-Mead, or something pretty large e.g. in
+case of CMA-ES).  We took this approach, but now instead we define the stepping
+as 10^N function evaluations, where N is for the time being defined in the
+$STEPPING_N_ITERS environment variable (N=2 by default).
 
 By default, this wraps around the SciPy optimizers and the reference
 CMA-ES Python implementation by N. Hansen (if you installed it).  In the
@@ -89,6 +96,13 @@ class MinimizeMethod(object):
         self.name = name
         self.fi = fi
 
+        stepping_n_iters = os.environ.get('STEPPING_N_ITERS')
+        if stepping_n_iters is None:
+            stepping_n_iters = 2
+        else:
+            stepping_n_iters = int(stepping_n_iters)
+        self.cb_period = 10**stepping_n_iters
+
         self.outer_loop = so.basinhopping
         self.minimizer_kwargs = dict()
 
@@ -114,15 +128,8 @@ class MinimizeMethod(object):
         import cma
 
         def cma_wrapper(fun, x0, callback, minimizer_kwargs):
-            class InnerCMACallback:
-                def __init__(self, realcb):
-                    self.realcb = realcb
-
-                def __call__(self, cma):
-                    self.realcb(cma.best.x)
-
-            cb = minimizer_kwargs.pop('callback')
-            minimizer_kwargs['options']['termination_callback'] = InnerCMACallback(cb) if cb is not None else None
+            # XXX: outer_cb support not implemented
+            assert callback is None
 
             if 'restarts' in minimizer_kwargs:
                 # We ignore passed x0 in case a restart strategy is employed
@@ -155,9 +162,6 @@ class MinimizeMethod(object):
             self.minimizer_kwargs['dim'] = self.fi.dim
 
     def _setup_scipy(self, name):
-        if name.lower() in ['anneal', 'cobyla']:
-            raise RuntimeError('MinimizationMethod does not support SciPy method %s (does not provide callback functionality).' % name)
-
         self.minimizer_kwargs = dict(
                 method=name,
                 # Bounded local optimizers
@@ -180,13 +184,38 @@ class MinimizeMethod(object):
         of `scipy.optimize.basinhopping` callback.  ``outer_cb`` may not
         ever get called if the method is non-restarting (e.g. CMA global
         optimization); ``inner_cb`` is the stepping functionality stopping
-        point.
+        point (takes current best x value as parameter).
 
         Note that some minimization methods (e.g. *IPOP-CMA) may currently
         ignore the passed ``x0`` value.
         """
-        return self.outer_loop(fun, x0, callback=outer_cb,
-                minimizer_kwargs=dict(callback=inner_cb, **self.minimizer_kwargs))
+        return self.outer_loop(self._build_cbfun(fun, inner_cb), x0,
+                               callback=outer_cb,
+                               minimizer_kwargs=dict(**self.minimizer_kwargs))
+
+    def _build_cbfun(self, fun, inner_cb):
+        """
+        Return a callable that will evaluate fun() at a given point,
+        while also tracking the best point encountered so far and
+        occassionally calling inner_cb with that point.
+        """
+        class TrackedFun:
+            def __init__(self, fun, inner_cb, inner_cb_period):
+                self.fun = fun
+                self.inner_cb = inner_cb
+                self.inner_cb_period = inner_cb_period
+                self.calls = 0
+                self.best = (None, None)
+            def __call__(self, x):
+                y = self.fun(x)
+                if self.best[1] is None or self.best[1] > y:
+                    self.best = (x, y)
+                if self.calls > 0 and self.calls % self.inner_cb_period == 0:
+                    self.inner_cb(self.best[0])
+                    self.best = (None, None)
+                self.calls += 1
+                return y
+        return TrackedFun(fun, inner_cb, self.cb_period)
 
 
 class SteppingData:

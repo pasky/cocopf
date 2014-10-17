@@ -5,6 +5,10 @@
 A wrapper to scipy.optimize.minimize that returns after each iteration
 (and resumes again on demand), i.e. provides an iteration by iteration
 stepping functionality.
+
+(Note that "iteration" may be whenever inner_cb of MinimizeMethod is
+called - right now actually not a single iteration of the algorithm,
+but N function evaluations by the algorithm.)
 """
 
 import threading
