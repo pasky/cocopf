@@ -11,6 +11,11 @@ VALTYPE can be 'rank' (average rank) and 'slowdown2<something>'
 (average log-slowdown compared to <something>).  VALTYPE can
 end with trailing @ to determine that std, median should be also
 printed out.
+
+In case of slowdown2<something>, an additional number is printed,
+which is a portion of functions solved within the total available
+budget, relative to the <something>; 1.0 means all functions that
+were solved by the <something> were also solved by that algorithm.
 """
 
 import os
@@ -54,20 +59,22 @@ def val_slowdown(pds, baseline_name, dim=None, funcId=None, groupby=None):
 
     avals = [list() for _ in range(len(pds.algds.keys()) + len(pds.stratds.keys()))]
     print str(len(avals)), str(len(pds.algds.keys()) + len(pds.stratds.keys()))
+    baseline_solved = 0
     for fid in funcId:
         print 'fid:' + str(fid)
         baseline_ds = get_stratds(pds, baseline_name, dim, fid)
         baseline_conv_fevs = groupby(baseline_ds.detEvals([10**-8]))
         baseline_conv_lfevs = np.log(baseline_conv_fevs) / np.log(pfsize)
 
+        if not np.isnan(baseline_conv_fevs):
+            baseline_solved += 1
+
         i = 0
         for (kind, name, ds) in _pds_table_iterator(pds, dim, fid):
             conv_fevs = groupby(ds.detEvals([10**-8]))
-            if np.isnan(baseline_conv_fevs):
+            if np.isnan(baseline_conv_fevs) or np.isnan(conv_fevs):
                 print name + ' \infty'
                 continue
-            if np.isnan(conv_fevs):
-                conv_fevs = pfsize**(baseline_conv_lfevs + 3)
             conv_lfevs = np.log(conv_fevs) / np.log(pfsize)
             val = conv_lfevs - baseline_conv_lfevs
             avals[i].append(val)
@@ -77,9 +84,9 @@ def val_slowdown(pds, baseline_name, dim=None, funcId=None, groupby=None):
     for i in range(len(avals)):
         print str(i), str(avals[i])
         if avals[i] == []:
-            avals[i] = np.inf
+            avals[i] = (np.inf, np.inf, np.inf, np.inf)
         else:
-            avals[i] = (np.average(avals[i]), np.std(avals[i]), np.median(avals[i]))
+            avals[i] = (np.average(avals[i]), np.std(avals[i]), np.median(avals[i]), float(len(avals[i])) / baseline_solved)
         print '>', str(avals[i])
     return avals
 
@@ -152,9 +159,9 @@ if __name__ == "__main__":
             return v[0]
         elif showStat:
             # avg std median
-            return '$%.1f^{\pm %.1f}_{|\, %.1f}$' % (v[0], v[1], v[2])
+            return '$%.1f^{\pm %.1f}_{|\, %.1f}$ | %.3f' % (v[0], v[1], v[2], v[3])
         else:
-            return '%.1f' % v[0]
+            return '%.1f | %.3f' % (v[0], v[3])
 
     print ' & '.join(['Solver'] + sys.argv[4:]) + ' \\\\'
     for i in range(len(names)):
