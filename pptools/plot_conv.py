@@ -109,7 +109,7 @@ def fig_overview(pds, dim, fid):
     subplots = []
     # Also potentially interesting (but hard to comprehend):
     # evals2oracle_by_evals
-    for (i, plottype) in enumerate(['fval_by_budget', 'rank_by_budget', 'fval2oracle_by_budget', 'evals2oracle_by_target']):
+    for (i, plottype) in enumerate(['fval_by_budget', 'rank_by_budget', 'fval2oracle_by_budget']):
         ax = fig.add_subplot(2, 2, 1+i)
         plot_by_type(pds, ax, plottype, dim, fid)
         subplots.append(ax)
