@@ -76,7 +76,7 @@ def val_slowdown(pds, baseline_name, dim=None, funcId=None, groupby=None):
                 print name + ' \infty'
                 continue
             conv_lfevs = np.log(conv_fevs) / np.log(pfsize)
-            val = conv_lfevs - baseline_conv_lfevs
+            val = conv_fevs / baseline_conv_fevs
             avals[i].append(val)
             print name + ' ' + str(val) + ', ' + str(conv_lfevs) + '/' + str(baseline_conv_lfevs)
             i += 1
