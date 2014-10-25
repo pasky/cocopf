@@ -51,30 +51,39 @@ class Population:
 
     def step_one(self, i):
         """
-        Perform a single minimization step with member i.
+        Perform a minimization step with member i.  This step takes
+        at least one algorithm iteration, but also spends at least
+        100 nfevs on the step (i.e. makes multiple iterations in that case).
         Returns an (x,y) tuple.
         """
-        for retry in [0,1]: # retry once if StopIteration
+        base_nfevs = self.fi.f.evaluations
+        best_x = None
+        best_y = None
+        while self.fi.f.evaluations < base_nfevs + 100:
             try:
                 # Step by a single iteration of the minimizer
                 self.points[i] = self.minimizers[i].next()
                 x = self.points[i]
-                break
             except StopIteration:
                 # Local optimum, pick a new random point
                 x = self.points[i]
                 self.restart_one(i)
                 # We did no computation for [i] yet in this iteration
-                # so make a step right away
+                # so just retry
                 continue
 
-        # Get the value at this point
-        y = self.fi.evalfun(x)
-        self.values[i] = y
+            # Get the value at this point, and consider it the canonical
+            # iteration value if it's best so far in this step
+            y = self.fi.evalfun(x)
+            if best_y is None or best_y > y:
+                best_x = x
+                best_y = y
+
+        self.values[i] = best_y
         self.iters[i] += 1
         self.total_steps += 1
         self.data.record(i, self.minimizers[i].minmethod.name, self.iters[i], self.values[i] - self.fi.f.fopt, self.points[i])
-        return (x, y)
+        return (best_x, best_y)
 
     def restart_one(self, i):
         """
