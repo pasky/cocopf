@@ -36,6 +36,8 @@ All in all, these minimization method names are recognized:
 """
 
 import os
+import sys
+sys.path.insert(0, '.')
 
 import numpy as np
 import scipy.optimize as so
