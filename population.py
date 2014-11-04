@@ -7,15 +7,24 @@ keep track of solutions and respective minimizer states.
 
 Solution search progress (in respect to method population) is
 recorded to an .mdat file.
+
+Minimizer steps can be also *replayed* - when instantiating
+a minimizer, we check if an existing mdat file doesn't exist
+already; if so, we report that and then simply yield the steps
+recorded in this mdat file instead of actually running the
+algorithm in step_one().  To generate a replayable mdat file,
+run a job like:
+
+    parallel -u --gnu env BBOB_FUNSTRIPES={1}%3 BBOB_INSTRIPES={2}%5 experiments/pop-uniform.py BFGS 1 100000 ::: `seq 0 2` ::: `seq 0 4`
 """
 
-import string
+from __future__ import print_function
+
+import math
 import sys
-import time
 import warnings
 
 import numpy as np
-import numpy.random as nr
 
 from cocopf.minstep import MinimizeStepping
 from cocopf.methods import SteppingData
@@ -45,17 +54,14 @@ class Population:
         self.data = SteppingData(self.fi)
 
     def _minimizer_make(self, i):
-        warnings.simplefilter("ignore") # ignore warnings about unused/ignored options
-        return MinimizeStepping(self.fi.f.evalfun, self.points[i],
-                self.methods[i % len(self.methods)])
+        try:
+            return RecordedStepping(self.fi, self.methods[i % len(self.methods)])
+        except IOError:
+            warnings.simplefilter("ignore") # ignore warnings about unused/ignored options
+            return MinimizeStepping(self.fi.f.evalfun, self.points[i],
+                                    self.methods[i % len(self.methods)])
 
-    def step_one(self, i):
-        """
-        Perform a minimization step with member i.  This step takes
-        at least one algorithm iteration, but also spends at least
-        100 nfevs on the step (i.e. makes multiple iterations in that case).
-        Returns an (x,y) tuple.
-        """
+    def _step_one_call(self, i):
         base_nfevs = self.fi.f.evaluations
         best_x = None
         best_y = None
@@ -84,6 +90,37 @@ class Population:
         self.total_steps += 1
         self.data.record(i, self.minimizers[i].minmethod.name, self.iters[i], self.values[i] - self.fi.f.fopt, self.points[i])
         return (best_x, best_y)
+
+    def _step_one_replay(self, i):
+        (nfevs, y) = self.minimizers[i].replay_step()
+        # print(nfevs, y)
+        self.values[i] = y
+        self.iters[i] += 1
+        self.total_steps += 1
+
+        # Ok, now we need to "evaluate" the function appropriate
+        # number of times to get stuff logged
+        _fun_evalfull = self.fi.f._fun_evalfull
+        self.fi.f._fun_evalfull = lambda x: ([y for i in range(nfevs)], [y for i in range(nfevs)])
+        self.fi.f.evalfun(np.ones((nfevs, self.fi.dim)))
+        self.fi.f._fun_evalfull = _fun_evalfull
+
+        return (None, y)
+
+    def step_one(self, i):
+        """
+        Perform a minimization step with member i.  This step takes
+        at least one algorithm iteration, but also spends at least
+        100 nfevs on the step (i.e. makes multiple iterations in that case).
+        Returns an (x,y) tuple.
+
+        Note that x may be None (e.g. during a replay).
+        """
+        if isinstance(self.minimizers[i], MinimizeStepping):
+            return self._step_one_call(i)
+        else:
+            assert isinstance(self.minimizers[i], RecordedStepping)
+            return self._step_one_replay(i)
 
     def restart_one(self, i):
         """
@@ -126,3 +163,79 @@ class Population:
     def stop(self):
         for m in self.minimizers:
             m.stop()
+
+
+class RecordedStepping:
+    def __init__(self, fi, minmethod):
+        self.fi = fi
+        self.minmethod = minmethod
+        self.s = 0
+        self.steps = []
+        self.warn_end = True
+        self._load()
+
+    def _data_location(self):
+        """
+        Return a tuple to the mdat file path and number of record within
+        that file.
+        """
+        # XXX: We hardcode disabled BBOB_FULLDIM, instance list and
+        # BBOB_INSTRIPES %5
+        instances = range(1, 6) + range(31, 41)
+        inidx = instances.index(self.fi.iinstance)
+        strmaxfev = '1e%d' % int(math.log10(self.fi.maxfunevals / self.fi.dim))
+        datapath = 'data-%s/pUNIF1_%s/%d%%5' % (strmaxfev, self.minmethod.name, inidx % 5)
+        mdatpath = '%s/data_f%d/bbobexp_f%d_DIM%d.mdat' % (datapath, self.fi.fun_id, self.fi.fun_id, self.fi.dim)
+        return (mdatpath, int(inidx / 5))
+
+    def _load(self):
+        # If the mdat file does not exist, we throw an exception which
+        # is caught in Population._minimizer_make() and triggers a
+        # normal MinimizeStepping instantiation.
+        (datapath, recno) = self._data_location()
+        datafile = open(datapath, 'r')
+        print('Loading replay %d from %s' % (recno, datapath), file=sys.stderr)
+        recno += 1
+        for line in datafile:
+            if line.startswith('%'):
+                recno -= 1
+                continue
+            if recno < 0:
+                break
+            if recno > 0:
+                continue
+            # This is the right instance!
+            # 2464 19 0 L-BFGS-B 20 +6.136498598e-07 +6.134980595e-07
+            # 2574 20 0 L-BFGS-B 21 +4.228133009e+00
+            items = line.split()
+            try:
+                nfevs = int(items[0])
+                y = float(items[5]) + self.fi.f.fopt
+            except ValueError:
+                # 37975 96 0 BFGS 1 +1.089795774e-07 +1.089794353e-07
+                # 38379 97 0 BFGS 1       +nan
+                continue  # ignore such steps
+            if len(self.steps) > 0:
+                self.steps.append((nfevs - self.steps[-1][0], y))
+            else:
+                self.steps.append((nfevs, y))
+        # print('\t%d steps loaded, %d nfevs total' % (len(self.steps), nfevs), file=sys.stderr)
+
+    def replay_step(self):
+        """
+        Return (nfevs, y) state on the next step.
+        """
+        if self.s > len(self.steps) - 1:
+            if self.warn_end:
+                print('Warning: %d,%d %s replay hist a stop at %d #steps, %d nfevs' %
+                      (self.fi.fun_id, self.fi.iinstance, self.minmethod.name, self.s, self.steps[-1][0]),
+                      file=sys.stderr)
+                self.warn_end = False
+            # ... and keep returning the last step recorded
+            self.s = len(self.steps) - 1
+        step = self.steps[self.s]
+        self.s += 1
+        return step
+
+    def stop(self):
+        pass
