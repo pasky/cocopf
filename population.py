@@ -92,6 +92,7 @@ class Population:
         return (best_x, best_y)
 
     def _step_one_replay(self, i):
+        orig_y = self.values[i]
         (nfevs, y) = self.minimizers[i].replay_step()
         # print(nfevs, y)
         self.values[i] = y
@@ -99,10 +100,26 @@ class Population:
         self.total_steps += 1
 
         # Ok, now we need to "evaluate" the function appropriate
-        # number of times to get stuff logged
+        # number of times to get stuff logged; we exp-interpolate
+        # between original and new value over the course of 1..nfevs
+        base_y = min(orig_y, y) - self.fi.f.precision
+        precshift = 1
+        while base_y == orig_y or base_y == y:
+            # It is possible that if base_y is a very big number,
+            # the addition is too small to show up
+            base_y -= self.fi.f.precision * (2 ** precshift)
+            precshift += 1
+        yvals = np.exp(np.linspace(np.log(orig_y - base_y), np.log(y - base_y), nfevs)) + base_y
+        # ...cutting off early if we pass the convergence criterion.
+        yvals_trunc = []
+        for yval in yvals:
+            yvals_trunc.append(yval)
+            if yval - self.fi.f.ftarget < self.fi.f.precision:
+                break
+
         _fun_evalfull = self.fi.f._fun_evalfull
-        self.fi.f._fun_evalfull = lambda x: ([y for i in range(nfevs)], [y for i in range(nfevs)])
-        self.fi.f.evalfun(np.ones((nfevs, self.fi.dim)))
+        self.fi.f._fun_evalfull = lambda x: (yvals_trunc, yvals_trunc)
+        self.fi.f.evalfun(np.ones((len(yvals_trunc), self.fi.dim)))
         self.fi.f._fun_evalfull = _fun_evalfull
 
         return (None, y)
