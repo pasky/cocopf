@@ -113,15 +113,10 @@ class Population:
         # print(self.minimizers[i].minmethod.name, self.nfevs[i], nfevs, self.fi.dim, self.fi.f.evaluations)
         yvals = np.exp(np.linspace(np.log(orig_y - base_y), np.log(y - base_y), nfevs)) + base_y
         # ...cutting off early if we pass the convergence criterion.
-        yvals_trunc = []
-        for yval in yvals:
-            yvals_trunc.append(yval)
-            if yval - self.fi.f.ftarget < self.fi.f.precision:
-                break
 
         _fun_evalfull = self.fi.f._fun_evalfull
-        self.fi.f._fun_evalfull = lambda x: (yvals_trunc, yvals_trunc)
-        self.fi.f.evalfun(np.ones((len(yvals_trunc), self.fi.dim)))
+        self.fi.f._fun_evalfull = lambda x: (yvals, yvals)
+        self.fi.f.evalfun(np.ones((len(yvals), self.fi.dim)))
         self.fi.f._fun_evalfull = _fun_evalfull
         # print(self.minimizers[i].minmethod.name, self.nfevs[i], nfevs, self.fi.dim, self.fi.f.evaluations)
 
