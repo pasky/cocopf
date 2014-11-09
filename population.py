@@ -98,6 +98,7 @@ class Population:
         self.values[i] = y
         self.iters[i] += 1
         self.total_steps += 1
+        self.data.record(i, self.minimizers[i].minmethod.name, self.iters[i], self.values[i] - self.fi.f.fopt, None)
 
         # Ok, now we need to "evaluate" the function appropriate
         # number of times to get stuff logged; we exp-interpolate
