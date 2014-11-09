@@ -109,6 +109,7 @@ class Population:
             # the addition is too small to show up
             base_y -= self.fi.f.precision * (2 ** precshift)
             precshift += 1
+        # print(self.minimizers[i].minmethod.name, self.nfevs[i], nfevs, self.fi.dim, self.fi.f.evaluations)
         yvals = np.exp(np.linspace(np.log(orig_y - base_y), np.log(y - base_y), nfevs)) + base_y
         # ...cutting off early if we pass the convergence criterion.
         yvals_trunc = []
@@ -121,6 +122,7 @@ class Population:
         self.fi.f._fun_evalfull = lambda x: (yvals_trunc, yvals_trunc)
         self.fi.f.evalfun(np.ones((len(yvals_trunc), self.fi.dim)))
         self.fi.f._fun_evalfull = _fun_evalfull
+        # print(self.minimizers[i].minmethod.name, self.nfevs[i], nfevs, self.fi.dim, self.fi.f.evaluations)
 
         return (None, y)
 
@@ -213,6 +215,7 @@ class RecordedStepping:
         datafile = open(datapath, 'r')
         print('Loading replay %d from %s' % (recno, datapath), file=sys.stderr)
         recno += 1
+        base_nfevs = 0
         for line in datafile:
             if line.startswith('%'):
                 recno -= 1
@@ -232,10 +235,8 @@ class RecordedStepping:
                 # 37975 96 0 BFGS 1 +1.089795774e-07 +1.089794353e-07
                 # 38379 97 0 BFGS 1       +nan
                 continue  # ignore such steps
-            if len(self.steps) > 0:
-                self.steps.append((nfevs - self.steps[-1][0], y))
-            else:
-                self.steps.append((nfevs, y))
+            self.steps.append((nfevs - base_nfevs, y))
+            base_nfevs = nfevs
         # print('\t%d steps loaded, %d nfevs total' % (len(self.steps), nfevs), file=sys.stderr)
 
     def replay_step(self):
