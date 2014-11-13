@@ -66,7 +66,7 @@ def minimize_f(fi, method = None, wantrestarts = None):
             def __call__(self, x):
                 self.n_iters += 1
                 y = self.fi.evalfun(x)
-                self.data.record(0, self.mm.name, self.n_iters, y - self.fi.f.fopt, x)
+                self.data.record(0, self.mm.name, self.f.evaluations, y - self.fi.f.fopt, x)
 
                 if y < self.f.ftarget:
                     raise MMCancel()

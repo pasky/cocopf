@@ -98,7 +98,7 @@ class Population:
         self.nfevs[i] += self.fi.f.evaluations - base_nfevs
         self.iters[i] += 1
         self.total_steps += 1
-        self.data.record(i, self.minimizers[i].minmethod.name, self.iters[i], self.values[i] - self.fi.f.fopt, self.points[i])
+        self.data.record(i, self.minimizers[i].minmethod.name, self.nfevs[i], self.values[i] - self.fi.f.fopt, self.points[i])
         return (best_x, best_y)
 
     def _step_one_replay(self, i):
@@ -138,7 +138,7 @@ class Population:
         self.nfevs[i] += nfevs
         self.iters[i] += 1
         self.total_steps += 1
-        self.data.record(i, self.minimizers[i].minmethod.name, self.iters[i], self.values[i] - self.fi.f.fopt, None)
+        self.data.record(i, self.minimizers[i].minmethod.name, self.nfevs[i], self.values[i] - self.fi.f.fopt, None)
 
         # Ok, now we need to "evaluate" the function appropriate
         # number of times to get stuff logged; we exp-interpolate

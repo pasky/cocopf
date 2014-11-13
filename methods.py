@@ -208,16 +208,16 @@ class SteppingData:
             self.f._readytostart()
 
         self.datafile = open(os.path.splitext(self.f.datafile)[0] + '.mdat', 'a')
-        self.datafile.write("% function evaluation | portfolio iteration | instance index | instance method | instance invocations | instance best noise-free fitness - Fopt | best noise-free fitness - Fopt\n")  # | x1 | x2...
+        self.datafile.write("% function evaluation | portfolio iteration | instance index | instance method | instance nfevs | instance best noise-free fitness - Fopt | best noise-free fitness - Fopt\n")  # | x1 | x2...
 
     def end_iter(self):
         self.total_iters += 1
 
-    def record(self, i, name, iters, fitness, point):
+    def record(self, i, name, nfevs, fitness, point):
         e = self.f.lasteval
         best = e.bestf - self.f.fopt
         res = ('%d %d %d %s %d %+10.9e'
-               % (e.num, self.total_iters, i, name, iters, fitness))
+               % (e.num, self.total_iters, i, name, nfevs, fitness))
 
         if self.last_best is None or best != self.last_best:
             res += (' %+10.9e' % best)
