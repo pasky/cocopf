@@ -91,7 +91,7 @@ def minimize_f(fi, K = None, method = None):
 
     # Iterate; make a full iteration even in case maxfunevals is reached.
     stop = False
-    while not stop:
+    while not stop and not pop.should_stop():
         # Always run the algorithm which has the least nfevs, to allocate
         # nfevs fairly.
         next_i = np.argmin(pop.nfevs)
@@ -103,8 +103,6 @@ def minimize_f(fi, K = None, method = None):
             stop = True
             break # stop immediately, no point in going on
 
-        if f.evaluations > fi.maxfunevals:
-            stop = True
         pop.end_iter()
 
     pop.stop()

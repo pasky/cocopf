@@ -58,7 +58,7 @@ def minimize_f(fi, K = None, method = None, eps = None, accrual = None):
         popcredit.update()
 
     # Main set of iterations - explore/exploit.
-    while not stop and f.evaluations < fi.maxfunevals:
+    while not stop and not pop.should_stop():
         if np.random.rand() < eps:
             # Explore
             i = np.random.randint(K)

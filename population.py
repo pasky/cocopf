@@ -50,10 +50,13 @@ class Population:
         self.iters = np.zeros(self.K, dtype = np.int)
         # A population of function evaluation counters
         self.nfevs = np.zeros(self.K, dtype = np.int)
+        # Set of members for which we have issued a warning
+        self.warned = set()
 
         self.total_steps = 0
         self.total_iters = 0
         self.data = SteppingData(self.fi)
+        self.is_ready_to_stop = False
 
     def _minimizer_make(self, i):
         try:
@@ -87,6 +90,10 @@ class Population:
                 best_x = x
                 best_y = y
 
+        if self.fi.f.evaluations >= self.fi.maxfunevals:
+            # Stop when we have reached our expected number of evaluations.
+            self.is_ready_to_stop = True
+
         self.values[i] = best_y
         self.nfevs[i] += self.fi.f.evaluations - base_nfevs
         self.iters[i] += 1
@@ -96,8 +103,37 @@ class Population:
 
     def _step_one_replay(self, i):
         orig_y = self.values[i]
+
         (nfevs, y) = self.minimizers[i].replay_step()
         # print(nfevs, y)
+        if nfevs is None:
+            # We have run out of data!
+
+            if self.nfevs[i] >= self.fi.maxfunevals:
+                # When we have run out of data, replay a single fev with
+                # the last value (because we should still perform a "dummy"
+                # step, and this is asymptotically insignificant) and set
+                # a flag which should_stop() will return.
+                self.is_ready_to_stop = True
+                nfevs = 1
+                y = self.values[i]
+
+            else:
+                # However, this is not so simple; rarely, we enter this branch
+                # when we simply miss most of the records anomalously and would
+                # kill our evaluation prematurely; for example, BFGS on f12
+                # diverges and end after 3000nfevs with some nans.  Therefore,
+                # emulate a constant function if we did not reach maxfunevals
+                # yet, for 100nfevs (our per-iteration lower bound).
+                if i not in self.warned:
+                    print('Warning: f%d:%d %s replay hits a premature stop at %d nfevs' %
+                          (self.fi.fun_id, self.fi.iinstance,
+                           self.minimizers[i].minmethod.name, self.nfevs[i]),
+                          file=sys.stderr)
+                    self.warned.add(i)
+                nfevs = 100
+                y = self.values[i]
+
         self.values[i] = y
         self.nfevs[i] += nfevs
         self.iters[i] += 1
@@ -180,6 +216,19 @@ class Population:
         self.total_iters += 1
         self.data.end_iter()
 
+    def should_stop(self):
+        """
+        Return whether minimization should stop.  This means reaching
+        the max number of function evaluations in online portfolios,
+        or running out of data in replayed portfolios.  (When our
+        portfolio is mixed, this is not well defined.)
+
+        (Note that this does not check for convergence; typically, you
+        will want a separate check that also sets optmethod for that
+        in your code.)
+        """
+        return self.is_ready_to_stop
+
     def stop(self):
         for m in self.minimizers:
             m.stop()
@@ -191,7 +240,6 @@ class RecordedStepping:
         self.minmethod = minmethod
         self.s = 0
         self.steps = []
-        self.warn_end = True
         self._load()
 
     def _data_location(self):
@@ -242,16 +290,12 @@ class RecordedStepping:
 
     def replay_step(self):
         """
-        Return (nfevs, y) state on the next step.
+        Return (nfevs, y) state on the next step, or (None, None) when
+        we are out of data.
         """
         if self.s > len(self.steps) - 1:
-            if self.warn_end:
-                print('Warning: %d,%d %s replay hist a stop at %d #steps, %d nfevs' %
-                      (self.fi.fun_id, self.fi.iinstance, self.minmethod.name, self.s, self.steps[-1][0]),
-                      file=sys.stderr)
-                self.warn_end = False
-            # ... and keep returning the last step recorded
-            self.s = len(self.steps) - 1
+            # We have run out of data
+            return (None, None)
         step = self.steps[self.s]
         self.s += 1
         return step
