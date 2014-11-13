@@ -3,8 +3,8 @@
 #
 # Create a population of K solutions and iteratively minimize each
 # (step-by-step) using METHOD, giving each solution the same number
-# of iterations.  A solution is replaced in case minimization hits
-# local optimum.  Stops when optimum is found or we reach the MAXFEV
+# of function evaluations.  A solution is replaced in case minimization
+# hits local optimum.  Stops when optimum is found or we reach the MAXFEV
 # number of function evaluations.
 #
 # A mix of methods is also supported, if METHOD is a comma-separated
@@ -92,13 +92,16 @@ def minimize_f(fi, K = None, method = None):
     # Iterate; make a full iteration even in case maxfunevals is reached.
     stop = False
     while not stop:
-        for i in range(K):
-            (x, y) = pop.step_one(i)
-            #print("[%d] #%d %s=%s" % (pop.total_iters, i, x, y))
-            if y < f.ftarget:
-                optmethod = pop.minimizers[i].minmethod.name
-                stop = True
-                break # stop immediately, no point in going on
+        # Always run the algorithm which has the least nfevs, to allocate
+        # nfevs fairly.
+        next_i = np.argmin(pop.nfevs)
+
+        (x, y) = pop.step_one(next_i)
+        #print("[%d] #%d %s=%s" % (pop.total_iters, next_i, x, y))
+        if y < f.ftarget:
+            optmethod = pop.minimizers[next_i].minmethod.name
+            stop = True
+            break # stop immediately, no point in going on
 
         if f.evaluations > fi.maxfunevals:
             stop = True
@@ -120,7 +123,7 @@ if __name__ == "__main__":
 
     # b stands for "basinhopping"
     if method.find(',') >= 0:
-        shortname = 'mUNIF%d' % K
+        shortname = 'eUNIF%d' % K
         comments = 'Iterative UNIFORM-sampling mix (%s), pop. K=%d' % (method, K)
     else:
         shortname = 'pUNIF%d_%s' % (K, method)

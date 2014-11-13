@@ -48,6 +48,8 @@ class Population:
         self.minimizers = [self._minimizer_make(i) for i in range(self.K)]
         # A population of iteration counters
         self.iters = np.zeros(self.K, dtype = np.int)
+        # A population of function evaluation counters
+        self.nfevs = np.zeros(self.K, dtype = np.int)
 
         self.total_steps = 0
         self.total_iters = 0
@@ -86,6 +88,7 @@ class Population:
                 best_y = y
 
         self.values[i] = best_y
+        self.nfevs[i] += self.fi.f.evaluations - base_nfevs
         self.iters[i] += 1
         self.total_steps += 1
         self.data.record(i, self.minimizers[i].minmethod.name, self.iters[i], self.values[i] - self.fi.f.fopt, self.points[i])
@@ -96,6 +99,7 @@ class Population:
         (nfevs, y) = self.minimizers[i].replay_step()
         # print(nfevs, y)
         self.values[i] = y
+        self.nfevs[i] += nfevs
         self.iters[i] += 1
         self.total_steps += 1
         self.data.record(i, self.minimizers[i].minmethod.name, self.iters[i], self.values[i] - self.fi.f.fopt, None)
@@ -159,6 +163,7 @@ class Population:
         i = len(self.points) - 1
         self.minimizers.append(self._minimizer_make(i))
         self.iters = np.append(self.iters, [0], axis = 0)
+        self.nfevs = np.append(self.nfevs, [0], axis = 0)
 
         #y = self.fi.f.evalfun(self.points[i]) # This is just for the debug print
         #print("#%d new member %s=%s" % (i, self.points[i], y))
