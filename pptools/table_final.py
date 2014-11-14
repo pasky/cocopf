@@ -57,7 +57,12 @@ def val_slowdown(pds, baseline_name, dim=None, funcId=None, groupby=None):
     if groupby is None: groupby = np.median
     pfsize = len(pds.algds.keys())
 
-    avals = [list() for _ in range(len(pds.algds.keys()) + len(pds.stratds.keys()))]
+    try:
+        funcId = iter(funcId)
+    except TypeError:
+        funcId = [funcId]
+
+    avals = [list() for _ in _pds_table_iterator(pds, dim, 1)]
     print str(len(avals)), str(len(pds.algds.keys()) + len(pds.stratds.keys()))
     baseline_solved = 0
     for fid in funcId:
