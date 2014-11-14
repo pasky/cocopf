@@ -134,12 +134,6 @@ class Population:
                 nfevs = 100
                 y = self.values[i]
 
-        self.values[i] = y
-        self.nfevs[i] += nfevs
-        self.iters[i] += 1
-        self.total_steps += 1
-        self.data.record(i, self.minimizers[i].minmethod.name, self.nfevs[i], self.values[i] - self.fi.f.fopt, None)
-
         # Ok, now we need to "evaluate" the function appropriate
         # number of times to get stuff logged; we exp-interpolate
         # between original and new value over the course of 1..nfevs
@@ -160,6 +154,11 @@ class Population:
         self.fi.f._fun_evalfull = _fun_evalfull
         # print(self.minimizers[i].minmethod.name, self.nfevs[i], nfevs, self.fi.dim, self.fi.f.evaluations)
 
+        self.values[i] = y
+        self.nfevs[i] += nfevs
+        self.iters[i] += 1
+        self.total_steps += 1
+        self.data.record(i, self.minimizers[i].minmethod.name, self.nfevs[i], self.values[i] - self.fi.f.fopt, None)
         return (None, y)
 
     def step_one(self, i):
