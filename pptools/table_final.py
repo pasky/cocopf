@@ -74,6 +74,7 @@ def val_slowdown(pds, baseline_name, dim=None, funcId=None, groupby=None):
             conv_fevs = groupby(ds.detEvals([10**-8]))
             if np.isnan(baseline_conv_fevs) or np.isnan(conv_fevs):
                 print name + ' \infty'
+                i += 1
                 continue
             conv_lfevs = np.log(conv_fevs) / np.log(pfsize)
             val = conv_fevs / baseline_conv_fevs
