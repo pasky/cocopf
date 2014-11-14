@@ -40,7 +40,7 @@ else:
 for apath in algs:
     print apath
     aname = os.path.basename(os.path.normpath(apath))
-    pds.add_algorithm(aname, bb.load(glob.glob(apath+'/bbobexp_f*.info')))
+    pds.add_algorithm(aname, bb.load(glob.glob(apath+'/bbobexp_f*.info') + glob.glob(apath+'/*/bbobexp_f*.info')))
 for spath in strats:
     print spath
     sname = os.path.basename(os.path.normpath(spath))
