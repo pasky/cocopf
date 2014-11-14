@@ -18,6 +18,8 @@ budget, relative to the <something>; 1.0 means all functions that
 were solved by the <something> were also solved by that algorithm.
 """
 
+from __future__ import print_function
+
 import os
 import re
 import sys
@@ -66,7 +68,7 @@ def val_slowdown(pds, baseline_name, dim=None, funcId=None, groupby=None):
     # print str(len(avals)), str(len(pds.algds.keys()) + len(pds.stratds.keys()))
     baseline_solved = 0
     for fid in funcId:
-        print 'fid:' + str(fid)
+        print('fid:' + str(fid), file=sys.stderr)
         baseline_ds = get_stratds(pds, baseline_name, dim, fid)
         baseline_conv_fevs = groupby(baseline_ds.detEvals([10**-8]))
         baseline_conv_lfevs = np.log(baseline_conv_fevs) / np.log(pfsize)
@@ -78,13 +80,13 @@ def val_slowdown(pds, baseline_name, dim=None, funcId=None, groupby=None):
         for (kind, name, ds) in _pds_table_iterator(pds, dim, fid):
             conv_fevs = groupby(ds.detEvals([10**-8]))
             if np.isnan(baseline_conv_fevs) or np.isnan(conv_fevs):
-                print name + ' \infty'
+                print(name + ' \infty', file=sys.stderr)
                 i += 1
                 continue
             conv_lfevs = np.log(conv_fevs) / np.log(pfsize)
             val = conv_fevs / baseline_conv_fevs
             avals[i].append(val)
-            print name + ' ' + str(val) + ', ' + str(conv_lfevs) + '/' + str(baseline_conv_lfevs)
+            print(name + ' ' + str(val) + ', ' + str(conv_lfevs) + '/' + str(baseline_conv_lfevs), file=sys.stderr)
             i += 1
 
     for i in range(len(avals)):
@@ -169,9 +171,9 @@ if __name__ == "__main__":
         else:
             return '%.1f | %.3f' % (v[0], v[3])
 
-    print ' & '.join(['Solver'] + sys.argv[4:]) + ' \\\\'
+    print(' & '.join(['Solver'] + sys.argv[4:]) + ' \\\\')
     for i in range(len(names)):
-        print ' & '.join([names[i]] + [printval(v) for v in values[:,i]]) + ' \\\\'
+        print(' & '.join([names[i]] + [printval(v) for v in values[:,i]]) + ' \\\\')
 
     #print ' & '.join(['Functions'] + names) + ' \\\\'
     #for fid in sys.argv[4:]:
