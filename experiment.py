@@ -111,16 +111,16 @@ class Experiment:
                 datapath='data-%s%s/%s%s' % (strmaxfev, fulldim, shortname, dirsuffix),
                 algid=shortname, comments=comments)
 
-    def finstances(self):
+    def finstances(self, dimensions=None, fun_ids=None):
         """
         An iterator that generates all function instances
         to be evaluated.
         """
-        for dim in self.dimensions:
+        for dim in self.dimensions if dimensions is None else dimensions:
             maxfunevals = self.maxfev * dim
             fevs = np.zeros(len(self.function_ids) * len(self.instances))
             fevs_i = 0
-            for fun_id in self.function_ids:
+            for fun_id in self.function_ids if fun_ids is None else fun_ids:
                 for iinstance in self.instances:
                     self.f.setfun(*bbobbenchmarks.instantiate(fun_id, iinstance=iinstance))
                     yield FInstance(self.f, dim, fun_id, iinstance, maxfunevals)
