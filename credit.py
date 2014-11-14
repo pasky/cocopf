@@ -63,10 +63,10 @@ class PopulationCredit(object):
             accrual_method = accrual_method[:-1]
             self.reset_on_restart = True
 
-        self.assign_method = assign_method if callable(assign_method) else self._assign_resolve(assign_method)
-        self.accrual_method = accrual_method if callable(accrual_method) else self._accrual_resolve(accrual_method)
+        self.assign_method = assign_method if callable(assign_method) else self._assign_resolve(assign_method, pop)
+        self.accrual_method = accrual_method if callable(accrual_method) else self._accrual_resolve(accrual_method, pop)
 
-    def _assign_resolve(self, name):
+    def _assign_resolve(self, name, pop):
         """
         Resolve assignment operator names, possibly allowing
         the user to specify extra parameters. Feel free to extend
@@ -79,7 +79,7 @@ class PopulationCredit(object):
         else:
             raise ValueError("Unknown credit assignment operator " + str(name))
 
-    def _accrual_resolve(self, name):
+    def _accrual_resolve(self, name, pop):
         """
         Resolve accrual operator names, possibly allowing
         the user to specify extra parameters. Feel free to extend
