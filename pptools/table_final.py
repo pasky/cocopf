@@ -90,7 +90,7 @@ def val_slowdown(pds, baseline_name, dim=None, funcId=None, groupby=None):
     for i in range(len(avals)):
         print str(i), str(avals[i])
         if avals[i] == []:
-            avals[i] = (np.inf, np.inf, np.inf, np.inf)
+            avals[i] = (np.inf, np.inf, np.inf, 0)
         else:
             avals[i] = (np.average(avals[i]), np.std(avals[i]), np.median(avals[i]), float(len(avals[i])) / baseline_solved)
         print '>', str(avals[i])
