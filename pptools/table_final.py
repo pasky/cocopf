@@ -63,7 +63,7 @@ def val_slowdown(pds, baseline_name, dim=None, funcId=None, groupby=None):
         funcId = [funcId]
 
     avals = [list() for _ in _pds_table_iterator(pds, dim, 1)]
-    print str(len(avals)), str(len(pds.algds.keys()) + len(pds.stratds.keys()))
+    # print str(len(avals)), str(len(pds.algds.keys()) + len(pds.stratds.keys()))
     baseline_solved = 0
     for fid in funcId:
         print 'fid:' + str(fid)
@@ -88,12 +88,12 @@ def val_slowdown(pds, baseline_name, dim=None, funcId=None, groupby=None):
             i += 1
 
     for i in range(len(avals)):
-        print str(i), str(avals[i])
+        # print str(i), str(avals[i])
         if avals[i] == []:
             avals[i] = (np.inf, np.inf, np.inf, 0)
         else:
             avals[i] = (np.average(avals[i]), np.std(avals[i]), np.median(avals[i]), float(len(avals[i])) / baseline_solved)
-        print '>', str(avals[i])
+        # print '>', str(avals[i])
     return avals
 
 
@@ -157,8 +157,8 @@ if __name__ == "__main__":
     names = [name for (kind, name, ds) in _pds_table_iterator(pds, dim, 1)]
 
     values = np.array([val_by_type(pds, valtype, dim, fid) for fid in sys.argv[4:]])
-    print names
-    print values
+    # print names
+    # print values
 
     def printval(v):
         if v[0] == '\\infty':
