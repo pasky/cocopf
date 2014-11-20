@@ -37,16 +37,28 @@ if os.path.exists(picklefile) or os.path.exists(picklefile + '.gz'):
 else:
     pds = PortfolioDataSets()
 
+newalg = False
 for apath in algs:
-    print apath
     aname = os.path.basename(os.path.normpath(apath))
-    pds.add_algorithm(aname, bb.load(glob.glob(apath+'/bbobexp_f*.info') + glob.glob(apath+'/*/bbobexp_f*.info')))
+    if aname not in pds.algds:
+        print apath
+        pds.add_algorithm(aname, bb.load(glob.glob(apath+'/bbobexp_f*.info') + glob.glob(apath+'/*/bbobexp_f*.info')))
+        newalg = True
+    else:
+        print apath, 'already imported, skipping...'
 for spath in strats:
-    print spath
     sname = os.path.basename(os.path.normpath(spath))
-    pds.add_strategy(sname, bb.load(glob.glob(spath+'/bbobexp_f*.info') + glob.glob(spath+'/*/bbobexp_f*.info')))
+    if sname not in pds.stratds:
+        print spath
+        pds.add_strategy(sname, bb.load(glob.glob(spath+'/bbobexp_f*.info') + glob.glob(spath+'/*/bbobexp_f*.info')))
+    else:
+        print spath, 'already imported, skipping...'
 
-# TODO: Make generating these optional?
+if newalg:
+    # Force regen of "static strategies", the set of algorithms changed
+    pds._bestalg = None
+    pds._unifpf = None
+
 print "bestalg"
 pds.bestalg(None)
 print "unifpf"
