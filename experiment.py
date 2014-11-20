@@ -64,7 +64,9 @@ class Experiment:
         dimensions 2, 5 and 20 are evaluated, which is useful for
         templateBBOBmany ECRF grahs; this is useful for comparison
         during non-final experiments, especially with 10^4 or more
-        function evaluations.
+        function evaluations.  If $BBOB_SINGLEDIM is set to a dimension
+        number, only this dimension is considered; for slowdown tables,
+        we use BBOB_SINGLEDIM=5.
 
         If the environment variable $BBOB_FUNSTRIPES is set to "m%n" where
         m<n, m,n are integers, only some functions are evaluated, that is
@@ -84,6 +86,9 @@ class Experiment:
         if bool(os.environ.get('BBOB_FULLDIM')):
             self.dimensions = (2, 3, 5, 10, 20, 40) # Full settings
             fulldim = 'f'
+        elif bool(os.environ.get('BBOB_SINGLEDIM')):
+            self.dimensions = (int(os.environ.get('BBOB_SINGLEDIM')),)
+            fulldim = 'q'
         else:
             self.dimensions = (2, 5, 20) # Just bootstrap + BBOBmany ECRF
             fulldim = ''
