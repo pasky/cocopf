@@ -157,7 +157,7 @@ class MinimizeMethod(object):
             self.minimizer_kwargs['dim'] = self.fi.dim
 
     def _setup_scipy(self, name):
-        if name.lower() in ['anneal', 'cobyla']:
+        if str(name).lower() in ['anneal', 'cobyla']:
             raise RuntimeError('MinimizationMethod does not support SciPy method %s (does not provide callback functionality).' % name)
 
         self.minimizer_kwargs = dict(
